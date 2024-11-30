@@ -1,5 +1,5 @@
 {
-  "name": "express-backend-ts",
+  "name": "wijekoon-distributors-backend",
   "version": "1.0.0",
   "description": "",
   "main": "./dist/server.js",
@@ -33,6 +33,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.8.3"
+    "mongoose": "^8.8.3",
+    "uuid": "^11.0.3"
   }
 }
