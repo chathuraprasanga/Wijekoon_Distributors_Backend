@@ -29,6 +29,10 @@ const UserSchema: Schema = new Schema<IUser>(
             required: [true, "Phone is required"],
             unique: true,
         },
+        password: {
+            type: Schema.Types.String,
+            required: [true, "Password is required"],
+        },
         status: {
             type: Schema.Types.Boolean,
             required: [true, "Status is required"],

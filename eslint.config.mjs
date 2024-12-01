@@ -12,6 +12,7 @@ export default [
     rules: {
       // type rules you want
       "@typescript-eslint/no-explicit-any": "off", // Allow the use of 'any' everywhere
+      "sonarjs/no-overload-matches-call": "off" // Disable this specific rule
     },
   },
 ];

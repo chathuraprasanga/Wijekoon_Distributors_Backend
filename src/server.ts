@@ -3,9 +3,14 @@ import "dotenv/config";
 import packageInfo from "../package.json"
 import cors from "cors";
 import startup from "./utils/startup";
+import routes from "./routes";
+import connectDB from "./repositories";
 
 // Run startup ASCII art
 console.log(startup());
+
+// connect the database
+connectDB()
 
 const port = process.env.port ?? 5000;
 
@@ -15,6 +20,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use("/api/v1",routes);
 
 // Main route
 app.get("/", (req: Request, res: Response) => {
