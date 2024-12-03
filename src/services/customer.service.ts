@@ -57,3 +57,12 @@ export const updateCustomerService = async (id: any, data: any) => {
         throw e;
     }
 };
+
+export const changeStatusCustomerService = async (id: string, data: any) => {
+    try {
+        return await updateCustomerRepo({ _id: id }, { status: data.status });
+    } catch (e: any) {
+        console.error(e.message);
+        throw e;
+    }
+};
