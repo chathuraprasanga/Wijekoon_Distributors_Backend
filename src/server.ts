@@ -5,12 +5,14 @@ import cors from "cors";
 import startup from "./utils/startup";
 import routes from "./routes";
 import connectDB from "./repositories";
+import { getLocalIPAddress } from "./utils/localIpAddress";
 
 // Run startup ASCII art
 console.log(startup());
 
 // connect the database
 connectDB()
+const localIP =getLocalIPAddress();
 
 const port = process.env.port ?? 5000;
 
@@ -30,5 +32,7 @@ app.get("/", (req: Request, res: Response) => {
 
 // Start the server
 app.listen(port, () => {
-  console.log(`${packageInfo.name} server v${packageInfo.version} is running on http://localhost:${port}`);
+    console.log(`${packageInfo.name} server v${packageInfo.version} is running:`);
+    console.log(`- Local:    http://localhost:${port}`);
+    console.log(`- Network:  http://${localIP}:${port}`);
 });

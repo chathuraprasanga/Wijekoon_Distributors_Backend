@@ -4,14 +4,15 @@ import { sendResponse } from "../helpers/sendResponse";
 import jwt from "jsonwebtoken";
 import { findUserByUuidService } from "../services/user.service";
 
-const ACCESS_TOKEN_SECRET: any = process.env.accessSecret;
+const ACCESS_TOKEN_SECRET: any = process.env.access_secret;
 
-const authMiddleware = async (req: IRequest, res: IResponse, next: NextFunction) => {
+const authMiddleware = async (req: IRequest, res: IResponse, next: NextFunction): Promise<void> => {
     try {
         const authHeader = req.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return sendResponse(res, 401, "Unauthorized: No token Provided", null, "Unauthorized", null);
+            sendResponse(res, 401, "Unauthorized: No token Provided", null, "Unauthorized");
+            return;
         }
         const accessToken = authHeader.split(" ")[1];
 
@@ -29,7 +30,6 @@ const authMiddleware = async (req: IRequest, res: IResponse, next: NextFunction)
                 "Unauthorized: Token has expired",
                 null,
                 "Unauthorized",
-                null,
             );
         } else if (error.name === "JsonWebTokenError") {
             sendResponse(
@@ -38,7 +38,6 @@ const authMiddleware = async (req: IRequest, res: IResponse, next: NextFunction)
                 "Unauthorized: Invalid token",
                 null,
                 "Unauthorized",
-                null,
             );
         } else {
             console.error("Unexpected error during token verification:", error);
@@ -48,8 +47,9 @@ const authMiddleware = async (req: IRequest, res: IResponse, next: NextFunction)
                 "Internal Server Error",
                 null,
                 "Internal Server Error",
-                null,
             );
         }
     }
 };
+
+export default authMiddleware;

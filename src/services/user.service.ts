@@ -8,8 +8,8 @@ import ERROR_MESSAGES from "../constants/errors";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
-const ACCESS_TOKEN_SECRET:any = process.env.access_secret;
-const REFRESH_TOKEN_SECRET:any = process.env.refresh_secret;
+const ACCESS_TOKEN_SECRET: any = process.env.access_secret;
+const REFRESH_TOKEN_SECRET: any = process.env.refresh_secret;
 
 export const createUserService = async (data: any) => {
     try {
@@ -56,7 +56,7 @@ export const userLoginService = async (data: any) => {
             throw new Error("Email or phone number is required.");
         }
         const isEmail = /^\S+@\S+$/.test(emailOrPhone);
-        let user:any;
+        let user: any;
         if (isEmail) {
             user = await findUserByEmailService(emailOrPhone);
         } else {
@@ -92,7 +92,7 @@ const generateAccessToken = async (user: any) => {
     return jwt.sign(
         { username: user.username, uuid: user.uuid }, // Payload
         ACCESS_TOKEN_SECRET, // Secret key
-        { expiresIn: "30s" } // Options
+        { expiresIn: "1h" } // Options
     );
 };
 
@@ -100,6 +100,34 @@ const generateRefreshToken = async (user: any) => {
     return jwt.sign(
         { username: user.username, uuid: user.uuid }, // Payload
         REFRESH_TOKEN_SECRET, // Secret key
-        { expiresIn: "5m" } // Options
+        { expiresIn: "24h" } // Options
     );
+};
+
+export const confirmLoginService = async (user: any) => {
+    try {
+        return {
+            username: user.username,
+            email: user.email,
+            phone: user.phone,
+        };
+    } catch (e: any) {
+        console.error(e.message);
+        throw e;
+    }
+};
+
+export const tokenRefreshService = async (data: any) => {
+    try {
+        const decoded: any = jwt.verify(data.refreshToken, REFRESH_TOKEN_SECRET);
+        const user: any = await findUserByUuidService(decoded.uuid);
+        const payload = {
+            accessToken: await generateAccessToken(user),
+            refreshToken: await generateRefreshToken(user),
+        };
+        return payload;
+    } catch (e: any) {
+        console.error(e.message);
+        throw e;
+    }
 };
