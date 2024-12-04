@@ -2,6 +2,7 @@ import { IRequest, IResponse } from "../interfaces/dto";
 import { sendResponse } from "../helpers/sendResponse";
 import errors from "../constants/errors";
 import {
+    changeStatusProductService,
     createProductService,
     findAllProductsService,
     findProductByIdService,
@@ -82,6 +83,32 @@ export const updateProductController = async (
         const body = req.body;
         const response = await updateProductService(id, body);
         return sendResponse(res, 200, "Product updated successfully", response);
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            errors.INTERNAL_SERVER_ERROR,
+            null,
+            error.message
+        );
+    }
+};
+
+export const changeStatusProductController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const { id } = req.params;
+        const body = req.body;
+        const response = await changeStatusProductService(id, body);
+        return sendResponse(
+            res,
+            200,
+            "Product status changed successfully",
+            response
+        );
     } catch (error: any) {
         console.error(error.message);
         return sendResponse(

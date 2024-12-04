@@ -50,3 +50,12 @@ export const updateProductService = async (id: string, data: any) => {
         throw e;
     }
 };
+
+export const changeStatusProductService = async (id: string, data: any) => {
+    try {
+        return await updateProductRepo({ _id: id }, { status: data.status });
+    } catch (e: any) {
+        console.error(e.message);
+        throw e;
+    }
+};
