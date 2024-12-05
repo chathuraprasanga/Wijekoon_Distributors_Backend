@@ -5,6 +5,7 @@ export interface ISupplier extends Document {
     phone: string;
     email: string;
     address: string;
+    status: boolean;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -23,7 +24,13 @@ const SupplierSchema: Schema = new Schema<ISupplier>(
         email: {
             type: Schema.Types.String,
         },
-        address: Schema.Types.String,
+        address: {
+            type: Schema.Types.String,
+        },
+        status: {
+            type: Schema.Types.Boolean,
+            default: true,
+        },
     },
     {
         timestamps: true,
