@@ -5,6 +5,7 @@ import {
     updateCustomerRepo,
 } from "../repositories/customer.repository";
 import mongoose from "mongoose";
+import errors from "../constants/errors";
 
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -13,7 +14,7 @@ export const createCustomerService = async (data: any) => {
         const { phone } = data;
         const customerByPhone = await findCustomerByPhoneService(phone);
         if (customerByPhone) {
-            throw new Error("Customer already exists");
+            throw new Error(errors.CUSTOMER_ALREADY_EXIST);
         }
         return await createCustomerRepo(data);
     } catch (e: any) {
@@ -46,10 +47,15 @@ export const findCustomerByIdService = async (id: string) => {
 
 export const updateCustomerService = async (id: any, data: any) => {
     try {
-        // const customerByPhone = await findCustomerRepo({ phone: data.phone, _id: { $ne: id}, });
-        // if (customerByPhone) {
-        //     throw new Error("Phone number should be unique");
-        // }
+        const existCustomers = await findCustomersRepo({ phone: data.phone });
+        const duplicateCustomers = existCustomers.filter(
+            (c:any) => !c._id.equals(new ObjectId(id)) // Use .equals() for ObjectId comparison
+        );
+
+        if (duplicateCustomers.length > 0) {
+            throw new Error(errors.CUSTOMER_ALREADY_EXIST);
+        }
+
         delete data._id;
         return await updateCustomerRepo({ _id: new ObjectId(id) }, data);
     } catch (e: any) {

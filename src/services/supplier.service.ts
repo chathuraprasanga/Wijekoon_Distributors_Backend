@@ -4,9 +4,17 @@ import {
     findSuppliersRepo,
     updateSupplierRepo,
 } from "../repositories/supplier.repository";
+import errors from "../constants/errors";
+import mongoose from "mongoose";
+
+const ObjectId = mongoose.Types.ObjectId;
 
 export const createSupplierService = async (data: any) => {
     try {
+        const duplicateSupplier = await findSupplierRepo({ phone: data.phone });
+        if (duplicateSupplier) {
+            throw new Error(errors.SUPPLIER_ALREADY_EXIST);
+        }
         return await createSupplierRepo(data);
     } catch (e: any) {
         console.error(e.message);
@@ -34,6 +42,16 @@ export const findSupplierByIdService = async (id: string) => {
 
 export const updateSupplierService = async (id: string, data: any) => {
     try {
+        const existSuppliers = await findSuppliersRepo({ phone: data.phone });
+        const duplicateSuppliers = existSuppliers.filter(
+            (c: any) => !c._id.equals(new ObjectId(id)) // Use .equals() for ObjectId comparison
+        );
+
+        if (duplicateSuppliers.length > 0) {
+            throw new Error(errors.SUPPLIER_ALREADY_EXIST);
+        }
+
+        delete data._id;
         return await updateSupplierRepo({ _id: id }, data);
     } catch (e: any) {
         console.error(e.message);

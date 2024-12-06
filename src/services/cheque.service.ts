@@ -4,9 +4,20 @@ import {
     findChequesRepo,
     updateChequeRepo,
 } from "../repositories/cheque.repository";
+import errors from "../constants/errors";
+import mongoose from "mongoose";
+
+const ObjectId = mongoose.Types.ObjectId;
 
 export const createChequeService = async (data: any) => {
     try {
+        const duplicateCheque = await findChequeRepo({
+            customer: data.customer,
+            number: data.number,
+        });
+        if (duplicateCheque) {
+            throw new Error(errors.CHEQUE_ALREADY_EXIST);
+        }
         return await createChequeRepo(data);
     } catch (e: any) {
         console.error(e.message);
@@ -25,6 +36,18 @@ export const findAllChequeService = async () => {
 
 export const updateChequeService = async (id: string, data: any) => {
     try {
+        const existCheques = await findChequesRepo({
+            customer: data.customer,
+            number: data.number,
+        });
+        const duplicateCheques = existCheques.filter(
+            (c: any) => !c._id.equals(new ObjectId(id)) // Use .equals() for ObjectId comparison
+        );
+
+        if (duplicateCheques.length > 0) {
+            throw new Error(errors.CHEQUE_ALREADY_EXIST);
+        }
+
         return await updateChequeRepo({ _id: id }, data);
     } catch (e: any) {
         console.error(e.message);

@@ -4,6 +4,10 @@ import {
     findProductsRepo,
     updateProductRepo,
 } from "../repositories/product.repository";
+import errors from "../constants/errors";
+import mongoose from "mongoose";
+
+const ObjectId = mongoose.Types.ObjectId;
 
 export const findAllProductsService = async (data: any) => {
     try {
@@ -18,9 +22,8 @@ export const createProductService = async (data: any) => {
     try {
         const { productCode } = data;
         const existProduct = await findProductByProductCode(productCode);
-        console.log(existProduct);
         if (existProduct) {
-            throw new Error("Product code should be unique");
+            throw new Error(errors.PRODUCT_ALREADY_EXIST);
         }
         return await createProductRepo(data);
     } catch (e: any) {
@@ -44,6 +47,15 @@ export const findProductByIdService = async (id: string) => {
 
 export const updateProductService = async (id: string, data: any) => {
     try {
+        const existProducts = await findProductsRepo({ productCode: data.productCode });
+        const duplicateProducts = existProducts.filter(
+            (c:any) => !c._id.equals(new ObjectId(id)) // Use .equals() for ObjectId comparison
+        );
+
+        if (duplicateProducts.length > 0) {
+            throw new Error(errors.PRODUCT_ALREADY_EXIST);
+        }
+
         return await updateProductRepo({ _id: id }, data);
     } catch (e: any) {
         console.error(e.message);
