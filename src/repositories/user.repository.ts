@@ -19,3 +19,7 @@ export const updateUserRepo = (filters: any, data: any) => {
 export const aggregateUserRepo = (pipeline:any) => {
     return User.aggregate(pipeline).exec();
 };
+
+export const countUsers = (filters:any) => {
+    return User.countDocuments(filters).exec();
+}

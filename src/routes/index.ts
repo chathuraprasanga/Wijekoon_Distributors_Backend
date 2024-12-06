@@ -5,6 +5,7 @@ import productRoute from "./product.route";
 import supplierRoute from "./supplier.route";
 import chequeRoute from "./cheque.route";
 import invoiceRoute from "./invoice.route";
+import dashboardRoute from "./dashboard.route";
 
 const routes = Router();
 
@@ -14,5 +15,6 @@ routes.use("/products", productRoute);
 routes.use("/suppliers", supplierRoute);
 routes.use("/cheques", chequeRoute);
 routes.use("/invoices", invoiceRoute);
+routes.use("/dashboard", dashboardRoute);
 
 export default routes;

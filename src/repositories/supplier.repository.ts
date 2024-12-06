@@ -19,3 +19,7 @@ export const updateSupplierRepo = (filters: any, data: any) => {
 export const aggregateSupplierRepo = (pipeline: any) => {
     return Supplier.aggregate(pipeline).exec();
 };
+
+export const countSuppliers = (filters:any) => {
+    return Supplier.countDocuments(filters).exec();
+}

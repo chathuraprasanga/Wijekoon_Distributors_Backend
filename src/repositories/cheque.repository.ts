@@ -19,3 +19,7 @@ export const updateChequeRepo = (filters: any, data: any) => {
 export const aggregateChequeRepo = (pipeline: any) => {
     return Cheque.aggregate(pipeline).exec();
 };
+
+export const countCheques = (filters:any) => {
+    return Cheque.countDocuments(filters).exec();
+}
