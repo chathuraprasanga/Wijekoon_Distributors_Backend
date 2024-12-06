@@ -34,6 +34,7 @@ const InvoiceSchema: Schema = new Schema<IInvoice>(
             type: Schema.Types.String,
             enum: ["PAID", "NOT PAID"],
             required: [true, "Invoice status is required"],
+            default: "NOT PAID"
         },
         status: {
             type: Schema.Types.Boolean,
