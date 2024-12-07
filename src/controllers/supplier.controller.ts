@@ -33,7 +33,8 @@ export const getSuppliersController = async (
     res: IResponse
 ): Promise<any> => {
     try {
-        const response = await findSuppliersService({});
+        const body = req.body;
+        const response = await findSuppliersService(body);
         return sendResponse(
             res,
             200,

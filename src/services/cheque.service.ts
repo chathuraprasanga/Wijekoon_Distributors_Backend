@@ -1,4 +1,5 @@
 import {
+    aggregateChequeRepo,
     createChequeRepo,
     findChequeRepo,
     findChequesRepo,
@@ -27,7 +28,23 @@ export const createChequeService = async (data: any) => {
 
 export const findAllChequeService = async () => {
     try {
-        return await findChequesRepo({});
+        const pipeline = [
+            {
+                $lookup: {
+                    as: "customer",
+                    from: "customer",
+                    foreignField: "_id",
+                    localField: "customer"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$customer",
+                    preserveNullAndEmptyArrays: true
+                }
+            }
+        ]
+        return await aggregateChequeRepo(pipeline);
     } catch (e: any) {
         console.error(e.message);
         throw e;

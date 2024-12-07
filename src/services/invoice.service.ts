@@ -1,4 +1,5 @@
 import {
+    aggregateInvoiceRepo,
     createInvoiceRepo,
     findInvoiceRepo,
     findInvoicesRepo,
@@ -24,7 +25,23 @@ export const createInvoiceService = async (data: any) => {
 
 export const findAllInvoiceService = async () => {
     try {
-        return await findInvoicesRepo({});
+        const pipeline = [
+            {
+                $lookup: {
+                    as: "supplier",
+                    from: "supplier",
+                    foreignField: "_id",
+                    localField: "supplier"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$supplier",
+                    preserveNullAndEmptyArrays: true
+                }
+            }
+        ]
+        return await aggregateInvoiceRepo(pipeline);
     } catch (e: any) {
         console.error(e.message);
         throw e;

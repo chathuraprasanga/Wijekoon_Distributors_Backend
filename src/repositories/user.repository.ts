@@ -13,13 +13,13 @@ export const findUsersRepo = (filters: any) => {
 };
 
 export const updateUserRepo = (filters: any, data: any) => {
-    return User.findOneAndUpdate(filters, data).exec();
+    return User.findOneAndUpdate(filters, data, { new: true }).exec();
 };
 
-export const aggregateUserRepo = (pipeline:any) => {
+export const aggregateUserRepo = (pipeline: any) => {
     return User.aggregate(pipeline).exec();
 };
 
-export const countUsers = (filters:any) => {
+export const countUsers = (filters: any) => {
     return User.countDocuments(filters).exec();
-}
+};

@@ -22,8 +22,9 @@ export const createSupplierService = async (data: any) => {
     }
 };
 
-export const findSuppliersService = async (filters: any) => {
+export const findSuppliersService = async (data: any) => {
     try {
+        const filters = data.filters;
         return await findSuppliersRepo(filters);
     } catch (e: any) {
         console.error(e.message);

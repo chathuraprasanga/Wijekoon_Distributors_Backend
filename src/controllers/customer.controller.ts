@@ -39,7 +39,8 @@ export const getAllCustomersController = async (
     res: IResponse
 ): Promise<any> => {
     try {
-        const response = await findAllCustomersService();
+        const body = req.body;
+        const response = await findAllCustomersService(body);
         return sendResponse(
             res,
             200,

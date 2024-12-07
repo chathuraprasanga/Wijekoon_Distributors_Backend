@@ -1,7 +1,9 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { ObjectId, Schema } from "mongoose";
+import { Customer } from "./customer.model";
+import errors from "../constants/errors";
 
 export interface ICheques extends Document {
-    customer: string;
+    customer: ObjectId;
     number: string;
     bank: string;
     branch: string;
@@ -16,8 +18,15 @@ export interface ICheques extends Document {
 const ChequeSchema: Schema = new Schema<ICheques>(
     {
         customer: {
-            type: Schema.Types.String,
+            type: Schema.Types.ObjectId,
+            ref: "Customer",
             required: [true, "Customer is required."],
+            validate: {
+                validator: async function (value) {
+                    return Customer.exists({ _id: value });
+                },
+                message: errors.INVALID_CUSTOMER
+            }
         },
         number: {
             type: Schema.Types.String,

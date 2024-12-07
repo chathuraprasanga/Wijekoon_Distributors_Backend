@@ -13,9 +13,9 @@ export const createProductRepo = (data: any) => {
 };
 
 export const updateProductRepo = (filters: any, data: any) => {
-    return Product.findOneAndUpdate(filters, data).exec();
+    return Product.findOneAndUpdate(filters, data, { new: true }).exec();
 };
 
-export const countProducts = (filters:any) => {
+export const countProducts = (filters: any) => {
     return Product.countDocuments(filters).exec();
-}
+};

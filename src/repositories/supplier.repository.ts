@@ -13,13 +13,13 @@ export const findSupplierRepo = (filters: any) => {
 };
 
 export const updateSupplierRepo = (filters: any, data: any) => {
-    return Supplier.findOneAndUpdate(filters, data).exec();
+    return Supplier.findOneAndUpdate(filters, data, { new: true }).exec();
 };
 
 export const aggregateSupplierRepo = (pipeline: any) => {
     return Supplier.aggregate(pipeline).exec();
 };
 
-export const countSuppliers = (filters:any) => {
+export const countSuppliers = (filters: any) => {
     return Supplier.countDocuments(filters).exec();
-}
+};

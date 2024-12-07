@@ -27,9 +27,10 @@ const findCustomerByPhoneService = async (phone: string) => {
     return await findCustomerRepo({ phone: phone });
 };
 
-export const findAllCustomersService = async () => {
+export const findAllCustomersService = async (data: any) => {
     try {
-        return await findCustomersRepo({});
+        const filters = data.filters;
+        return await findCustomersRepo(filters);
     } catch (e: any) {
         console.error(e.message);
         throw e;
@@ -49,7 +50,7 @@ export const updateCustomerService = async (id: any, data: any) => {
     try {
         const existCustomers = await findCustomersRepo({ phone: data.phone });
         const duplicateCustomers = existCustomers.filter(
-            (c:any) => !c._id.equals(new ObjectId(id)) // Use .equals() for ObjectId comparison
+            (c: any) => !c._id.equals(new ObjectId(id)) // Use .equals() for ObjectId comparison
         );
 
         if (duplicateCustomers.length > 0) {

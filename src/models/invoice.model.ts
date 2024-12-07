@@ -1,7 +1,9 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { ObjectId, Schema } from "mongoose";
+import errors from "../constants/errors";
+import { Supplier } from "./supplier.model";
 
 export interface IInvoice extends Document {
-    supplier: string;
+    supplier: ObjectId;
     invoiceDate: string;
     invoiceNumber: string;
     amount: number;
@@ -14,8 +16,15 @@ export interface IInvoice extends Document {
 const InvoiceSchema: Schema = new Schema<IInvoice>(
     {
         supplier: {
-            type: Schema.Types.String,
+            type: Schema.Types.ObjectId,
+            ref: "Supplier",
             required: [true, "Supplier is required"],
+            validate: {
+                validator: async function (value) {
+                    return Supplier.exists({ _id: value });
+                },
+                message: errors.INVALID_SUPPLIER,
+            },
         },
         invoiceDate: {
             type: Schema.Types.String,
@@ -34,7 +43,7 @@ const InvoiceSchema: Schema = new Schema<IInvoice>(
             type: Schema.Types.String,
             enum: ["PAID", "NOT PAID"],
             required: [true, "Invoice status is required"],
-            default: "NOT PAID"
+            default: "NOT PAID",
         },
         status: {
             type: Schema.Types.Boolean,
