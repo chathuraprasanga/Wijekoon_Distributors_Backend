@@ -19,3 +19,16 @@ export const updateProductRepo = (filters: any, data: any) => {
 export const countProducts = (filters: any) => {
     return Product.countDocuments(filters).exec();
 };
+
+export const getPagedProductsRepo = (
+    matchFilter: any,
+    pageSize: any,
+    pageIndex: any,
+    sort:any
+) => {
+    return Product.find(matchFilter)
+        .sort({createdAt: sort})
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+        .exec();
+};

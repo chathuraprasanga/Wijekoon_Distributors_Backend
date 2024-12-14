@@ -23,3 +23,18 @@ export const aggregateInvoiceRepo = (pipeline: any) => {
 export const countInvoices = (filters: any) => {
     return Invoice.countDocuments(filters).exec();
 };
+
+export const getPagedInvoicesRepo = (
+    matchFilter: any,
+    pageSize: any,
+    pageIndex: any,
+    sort:any
+) => {
+    return Invoice.find(matchFilter)
+        .populate("supplier")
+        .sort({createdAt: sort})
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+        .exec();
+};
+

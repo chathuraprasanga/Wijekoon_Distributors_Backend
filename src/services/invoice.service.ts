@@ -1,8 +1,8 @@
 import {
-    aggregateInvoiceRepo,
+    aggregateInvoiceRepo, countInvoices,
     createInvoiceRepo,
     findInvoiceRepo,
-    findInvoicesRepo,
+    findInvoicesRepo, getPagedInvoicesRepo,
     updateInvoiceRepo,
 } from "../repositories/invoice.repository";
 import errors from "../constants/errors";
@@ -70,6 +70,41 @@ export const updateInvoiceService = async (id: string, data: any) => {
 export const getInvoiceByIdService = async (id: string) => {
     try {
         return await findInvoiceRepo({ _id: id });
+    } catch (e: any) {
+        console.error(e.message);
+        throw e;
+    }
+};
+
+export const getPagedInvoicesService = async (data: any) => {
+    try {
+        const filters = data.filters;
+        const { supplier, pageSize, pageIndex, sort, status, invoicedDate } = filters;
+        const matchFilter: any = { $and: [] };
+
+        if (supplier) {
+            matchFilter.$and.push({ supplier: new ObjectId(supplier) });
+        }
+
+        if (status) {
+            matchFilter.$and.push({ invoiceStatus: status });
+        }
+
+        if (invoicedDate) {
+            matchFilter.$and.push({ invoiceDate: invoicedDate });
+        }
+
+        const response = await getPagedInvoicesRepo(
+            matchFilter,
+            pageSize,
+            pageIndex,
+            sort
+        );
+        const documentCount = await countInvoices(matchFilter);
+        return {
+            response,
+            metadata: { total: documentCount, pageIndex },
+        };
     } catch (e: any) {
         console.error(e.message);
         throw e;

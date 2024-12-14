@@ -23,3 +23,16 @@ export const aggregateCustomerRepo = (pipeline: any) => {
 export const countCustomers = (filters: any) => {
     return Customer.countDocuments(filters).exec();
 };
+
+export const getPagedCustomersRepo = (
+    matchFilter: any,
+    pageSize: any,
+    pageIndex: any,
+    sort:any
+) => {
+    return Customer.find(matchFilter)
+        .sort({createdAt: sort})
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+        .exec();
+};

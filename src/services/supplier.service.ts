@@ -1,7 +1,8 @@
 import {
+    countSuppliers,
     createSupplierRepo,
     findSupplierRepo,
-    findSuppliersRepo,
+    findSuppliersRepo, getPagedSuppliersRepo,
     updateSupplierRepo,
 } from "../repositories/supplier.repository";
 import errors from "../constants/errors";
@@ -63,6 +64,36 @@ export const updateSupplierService = async (id: string, data: any) => {
 export const changeStatusSupplierService = async (id: string, data: any) => {
     try {
         return await updateSupplierRepo({ _id: id }, { status: data.status });
+    } catch (e: any) {
+        console.error(e.message);
+        throw e;
+    }
+};
+
+export const getPagedSuppliersService = async (data: any) => {
+    try {
+        const filters = data.filters;
+        const { searchQuery, pageSize, pageIndex, sort } = filters;
+        const matchFilter: any = {};
+        if (searchQuery) {
+            matchFilter.$or = [
+                { name: { $regex: searchQuery, $options: "i" } },
+                { email: { $regex: searchQuery, $options: "i" } },
+                { phone: { $regex: searchQuery, $options: "i" } },
+            ];
+        }
+
+        const response = await getPagedSuppliersRepo(
+            matchFilter,
+            pageSize,
+            pageIndex,
+            sort
+        );
+        const documentCount = await countSuppliers(matchFilter);
+        return {
+            response,
+            metadata: { total: documentCount, pageIndex },
+        };
     } catch (e: any) {
         console.error(e.message);
         throw e;

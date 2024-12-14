@@ -1,7 +1,9 @@
 import {
+    countCustomers,
     createCustomerRepo,
     findCustomerRepo,
     findCustomersRepo,
+    getPagedCustomersRepo,
     updateCustomerRepo,
 } from "../repositories/customer.repository";
 import mongoose from "mongoose";
@@ -30,7 +32,7 @@ const findCustomerByPhoneService = async (phone: string) => {
 export const findAllCustomersService = async (data: any) => {
     try {
         const filters = data.filters;
-        return await findCustomersRepo(filters);
+        return await findCustomersRepo({});
     } catch (e: any) {
         console.error(e.message);
         throw e;
@@ -68,6 +70,36 @@ export const updateCustomerService = async (id: any, data: any) => {
 export const changeStatusCustomerService = async (id: string, data: any) => {
     try {
         return await updateCustomerRepo({ _id: id }, { status: data.status });
+    } catch (e: any) {
+        console.error(e.message);
+        throw e;
+    }
+};
+
+export const getPagedCustomersService = async (data: any) => {
+    try {
+        const filters = data.filters;
+        const { searchQuery, pageSize, pageIndex, sort } = filters;
+        const matchFilter: any = {};
+        if (searchQuery) {
+            matchFilter.$or = [
+                { name: { $regex: searchQuery, $options: "i" } },
+                { email: { $regex: searchQuery, $options: "i" } },
+                { phone: { $regex: searchQuery, $options: "i" } },
+            ];
+        }
+
+        const response = await getPagedCustomersRepo(
+            matchFilter,
+            pageSize,
+            pageIndex,
+            sort
+        );
+        const documentCount = await countCustomers(matchFilter);
+        return {
+            response,
+            metadata: { total: documentCount, pageIndex },
+        };
     } catch (e: any) {
         console.error(e.message);
         throw e;

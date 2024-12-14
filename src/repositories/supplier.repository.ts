@@ -23,3 +23,16 @@ export const aggregateSupplierRepo = (pipeline: any) => {
 export const countSuppliers = (filters: any) => {
     return Supplier.countDocuments(filters).exec();
 };
+
+export const getPagedSuppliersRepo = (
+    matchFilter: any,
+    pageSize: any,
+    pageIndex: any,
+    sort:any
+) => {
+    return Supplier.find(matchFilter)
+        .sort({createdAt: sort})
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+        .exec();
+};

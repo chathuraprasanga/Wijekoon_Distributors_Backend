@@ -2,9 +2,10 @@ import { IRequest, IResponse } from "../interfaces/dto";
 import { sendResponse } from "../helpers/sendResponse";
 import errors from "../constants/errors";
 import {
-    createInvoiceService, findAllInvoiceService, getInvoiceByIdService,
+    createInvoiceService, findAllInvoiceService, getInvoiceByIdService, getPagedInvoicesService,
     updateInvoiceService,
 } from "../services/invoice.service";
+import { getPagedChequesService } from "../services/cheque.service";
 
 export const createInvoiceController = async (
     req: IRequest,
@@ -103,3 +104,29 @@ export const invoiceStatusChangeController = async(req: IRequest, res: IResponse
         );
     }
 }
+
+export const getPagedInvoicesController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const body = req.body;
+        const response = await getPagedInvoicesService(body);
+        return sendResponse(
+            res,
+            200,
+            "Customers fetched successfully",
+            response,
+            null
+        );
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            "Internal server error",
+            null,
+            error.message
+        );
+    }
+};

@@ -4,8 +4,7 @@ import errors from "../constants/errors";
 import {
     changeStatusProductService,
     createProductService,
-    findAllProductsService,
-    findProductByIdService,
+    findProductByIdService, getPagedProductsService,
     updateProductService,
 } from "../services/product.service";
 
@@ -15,7 +14,7 @@ export const getAllProductsController = async (
 ): Promise<any> => {
     try {
         const body = req.body;
-        const response = await findAllProductsService(body);
+        const response = await getPagedProductsService(body);
         return sendResponse(
             res,
             200,
@@ -107,6 +106,31 @@ export const changeStatusProductController = async (
             res,
             200,
             "Product status changed successfully",
+            response
+        );
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            errors.INTERNAL_SERVER_ERROR,
+            null,
+            error.message
+        );
+    }
+};
+
+export const getPagedProductsController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const body = req.body;
+        const response = await getPagedProductsService(body);
+        return sendResponse(
+            res,
+            200,
+            "Products fetched successfully",
             response
         );
     } catch (error: any) {

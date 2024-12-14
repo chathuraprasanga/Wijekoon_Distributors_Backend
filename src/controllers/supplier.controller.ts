@@ -5,7 +5,7 @@ import {
     changeStatusSupplierService,
     createSupplierService,
     findSupplierByIdService,
-    findSuppliersService, updateSupplierService,
+    findSuppliersService, getPagedSuppliersService, updateSupplierService,
 } from "../services/supplier.service";
 
 export const createSupplierController = async (
@@ -124,6 +124,32 @@ export const changeStatusSupplierController = async (
             res,
             500,
             errors.INTERNAL_SERVER_ERROR,
+            null,
+            error.message
+        );
+    }
+};
+
+export const getPagedSuppliersController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const body = req.body;
+        const response = await getPagedSuppliersService(body);
+        return sendResponse(
+            res,
+            200,
+            "Customers fetched successfully",
+            response,
+            null
+        );
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            "Internal server error",
             null,
             error.message
         );

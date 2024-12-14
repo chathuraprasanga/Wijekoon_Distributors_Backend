@@ -3,7 +3,7 @@ import { sendResponse } from "../helpers/sendResponse";
 import errors from "../constants/errors";
 import {
     createChequeService,
-    findAllChequeService, getChequeByIdService, updateChequeService,
+    findAllChequeService, getChequeByIdService, getPagedChequesService, updateChequeService,
 } from "../services/cheque.service";
 
 export const createChequeController = async (
@@ -103,3 +103,29 @@ export const chequeStatusChangeController = async(req: IRequest, res: IResponse)
         );
     }
 }
+
+export const getPagedChequesController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const body = req.body;
+        const response = await getPagedChequesService(body);
+        return sendResponse(
+            res,
+            200,
+            "Customers fetched successfully",
+            response,
+            null
+        );
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            "Internal server error",
+            null,
+            error.message
+        );
+    }
+};

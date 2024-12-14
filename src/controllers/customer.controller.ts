@@ -4,7 +4,7 @@ import {
     changeStatusCustomerService,
     createCustomerService,
     findAllCustomersService,
-    findCustomerByIdService,
+    findCustomerByIdService, getPagedCustomersService,
     updateCustomerService,
 } from "../services/customer.service";
 import errors from "../constants/errors";
@@ -133,6 +133,32 @@ export const changeStatusCustomerController = async (
             res,
             500,
             errors.INTERNAL_SERVER_ERROR,
+            null,
+            error.message
+        );
+    }
+};
+
+export const getPagedCustomersController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const body = req.body;
+        const response = await getPagedCustomersService(body);
+        return sendResponse(
+            res,
+            200,
+            "Customers fetched successfully",
+            response,
+            null
+        );
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            "Internal server error",
             null,
             error.message
         );

@@ -23,3 +23,19 @@ export const aggregateChequeRepo = (pipeline: any) => {
 export const countCheques = (filters: any) => {
     return Cheque.countDocuments(filters).exec();
 };
+
+
+export const getPagedChequesRepo = (
+    matchFilter: any,
+    pageSize: any,
+    pageIndex: any,
+    sort:any
+) => {
+    return Cheque.find(matchFilter)
+        .populate("customer")
+        .sort({createdAt: sort})
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+        .exec();
+};
+

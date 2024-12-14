@@ -1,7 +1,8 @@
 import {
+    countProducts,
     createProductRepo,
     findProductRepo,
-    findProductsRepo,
+    findProductsRepo, getPagedProductsRepo,
     updateProductRepo,
 } from "../repositories/product.repository";
 import errors from "../constants/errors";
@@ -71,3 +72,33 @@ export const changeStatusProductService = async (id: string, data: any) => {
         throw e;
     }
 };
+
+export const getPagedProductsService = async (data: any) => {
+    try {
+        const filters = data.filters;
+        const { searchQuery, pageSize, pageIndex, sort } = filters;
+        const matchFilter: any = {};
+        if (searchQuery) {
+            matchFilter.$or = [
+                { name: { $regex: searchQuery, $options: "i" } },
+                { productCode: { $regex: searchQuery, $options: "i" } },
+            ];
+        }
+
+        const response = await getPagedProductsRepo(
+            matchFilter,
+            pageSize,
+            pageIndex,
+            sort
+        );
+        const documentCount = await countProducts(matchFilter);
+        return {
+            response,
+            metadata: { total: documentCount, pageIndex },
+        };
+    } catch (e: any) {
+        console.error(e.message);
+        throw e;
+    }
+};
+
