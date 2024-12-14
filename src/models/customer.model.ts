@@ -23,7 +23,6 @@ const CustomerSchema: Schema = new Schema<ICustomer>(
         },
         email: {
             type: Schema.Types.String,
-            unique: true,
         },
         address: {
             type: Schema.Types.String,
