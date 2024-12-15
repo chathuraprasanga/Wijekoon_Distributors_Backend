@@ -19,8 +19,10 @@ export const createCustomerService = async (data: any) => {
             throw new Error(errors.CUSTOMER_ALREADY_EXIST);
         }
         const customersByEmail: any[] = await findCustomerByEmailService(email);
-        const duplicateCustomers = customersByEmail.filter((c) => c.email !== '');
-        if (duplicateCustomers.length > 0){
+        const duplicateCustomers = customersByEmail.filter(
+            (c) => c.email !== ""
+        );
+        if (duplicateCustomers.length > 0) {
             throw new Error(errors.EMAIL_IS_ALREADY_AVAILABLE);
         }
         return await createCustomerRepo(data);
@@ -88,14 +90,19 @@ export const changeStatusCustomerService = async (id: string, data: any) => {
 export const getPagedCustomersService = async (data: any) => {
     try {
         const filters = data.filters;
-        const { searchQuery, pageSize, pageIndex, sort } = filters;
-        const matchFilter: any = {};
+        const { searchQuery, pageSize, pageIndex, sort, status } = filters;
+        const matchFilter: any = { $and: [] };
+
         if (searchQuery) {
             matchFilter.$or = [
                 { name: { $regex: searchQuery, $options: "i" } },
                 { email: { $regex: searchQuery, $options: "i" } },
-                { phone: { $regex: searchQuery, $options: "i" } },
+                { phone: { $regex: searchQuery, $options: "i" } }
             ];
+        }
+
+        if (status) {
+            matchFilter.$and.push({ status: status !== "INACTIVE" });
         }
 
         const response = await getPagedCustomersRepo(
