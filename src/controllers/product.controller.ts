@@ -1,130 +1,24 @@
 import { IRequest, IResponse } from "../interfaces/dto";
 import { sendResponse } from "../helpers/sendResponse";
-import {
-    changeStatusCustomerService,
-    createCustomerService,
-    findAllCustomersService,
-    findCustomerByIdService, getPagedCustomersService,
-    updateCustomerService,
-} from "../services/customer.service";
 import errors from "../constants/errors";
+import {
+    changeStatusProductService,
+    createProductService,
+    findProductByIdService, getPagedProductsService,
+    updateProductService,
+} from "../services/product.service";
 
-export const createCustomerController = async (
+export const getAllProductsController = async (
     req: IRequest,
     res: IResponse
 ): Promise<any> => {
     try {
         const body = req.body;
-        const response = await createCustomerService(body);
-        return sendResponse(
-            res,
-            201,
-            "Customer created successfully",
-            response
-        );
-    } catch (error: any) {
-        console.error(error.message);
-        return sendResponse(
-            res,
-            500,
-            "Internal server error",
-            null,
-            error.message
-        );
-    }
-};
-
-export const getAllCustomersController = async (
-    req: IRequest,
-    res: IResponse
-): Promise<any> => {
-    try {
-        const body = req.body;
-        const response = await findAllCustomersService(body);
+        const response = await getPagedProductsService(body);
         return sendResponse(
             res,
             200,
-            "Customers fetched successfully",
-            response,
-            null
-        );
-    } catch (error: any) {
-        console.error(error.message);
-        return sendResponse(
-            res,
-            500,
-            "Internal server error",
-            null,
-            error.message
-        );
-    }
-};
-
-export const getCustomerController = async (
-    req: IRequest,
-    res: IResponse
-): Promise<any> => {
-    try {
-        const { id } = req.params;
-        const response = await findCustomerByIdService(id);
-        return sendResponse(
-            res,
-            200,
-            "Customer fetched successfully",
-            response,
-            null
-        );
-    } catch (error: any) {
-        console.error(error.message);
-        return sendResponse(
-            res,
-            500,
-            "Internal server error",
-            null,
-            error.message
-        );
-    }
-};
-
-export const updateCustomerController = async (
-    req: IRequest,
-    res: IResponse
-): Promise<any> => {
-    try {
-        const body = req.body;
-        const { id } = req.params;
-        const response = await updateCustomerService(id, body);
-        return sendResponse(
-            res,
-            200,
-            "Customer updated successfully",
-            response,
-            null
-        );
-    } catch (error: any) {
-        console.error(error.message);
-        return sendResponse(
-            res,
-            500,
-            "Internal server error",
-            null,
-            error.message
-        );
-    }
-};
-
-export const changeStatusCustomerController = async (
-    req: IRequest,
-    res: IResponse
-): Promise<any> => {
-    try {
-        const { id } = req.params;
-        const body = req.body;
-        const response = await changeStatusCustomerService(id, body);
-        return sendResponse(
-            res,
-            200,
-            "Customer status changed successfully",
+            "Products fetched successfully",
             response
         );
     } catch (error: any) {
@@ -139,26 +33,112 @@ export const changeStatusCustomerController = async (
     }
 };
 
-export const getPagedCustomersController = async (
+export const createProductController = async (
     req: IRequest,
     res: IResponse
 ): Promise<any> => {
     try {
         const body = req.body;
-        const response = await getPagedCustomersService(body);
+        const response = await createProductService(body);
+        return sendResponse(res, 201, "Product added successfully", response);
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            errors.INTERNAL_SERVER_ERROR,
+            null,
+            error.message
+        );
+    }
+};
+
+export const getProductController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const { id } = req.params;
+        const response = await findProductByIdService(id);
+        return sendResponse(res, 200, "Product fetched successfully", response);
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            errors.INTERNAL_SERVER_ERROR,
+            null,
+            error.message
+        );
+    }
+};
+
+export const updateProductController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const { id } = req.params;
+        const body = req.body;
+        const response = await updateProductService(id, body);
+        return sendResponse(res, 200, "Product updated successfully", response);
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            errors.INTERNAL_SERVER_ERROR,
+            null,
+            error.message
+        );
+    }
+};
+
+export const changeStatusProductController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const { id } = req.params;
+        const body = req.body;
+        const response = await changeStatusProductService(id, body);
         return sendResponse(
             res,
             200,
-            "Customers fetched successfully",
-            response,
-            null
+            "Product status changed successfully",
+            response
         );
     } catch (error: any) {
         console.error(error.message);
         return sendResponse(
             res,
             500,
-            "Internal server error",
+            errors.INTERNAL_SERVER_ERROR,
+            null,
+            error.message
+        );
+    }
+};
+
+export const getPagedProductsController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const body = req.body;
+        const response = await getPagedProductsService(body);
+        return sendResponse(
+            res,
+            200,
+            "Products fetched successfully",
+            response
+        );
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            errors.INTERNAL_SERVER_ERROR,
             null,
             error.message
         );

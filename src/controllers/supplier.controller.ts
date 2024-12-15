@@ -1,130 +1,44 @@
 import { IRequest, IResponse } from "../interfaces/dto";
 import { sendResponse } from "../helpers/sendResponse";
-import {
-    changeStatusCustomerService,
-    createCustomerService,
-    findAllCustomersService,
-    findCustomerByIdService, getPagedCustomersService,
-    updateCustomerService,
-} from "../services/customer.service";
 import errors from "../constants/errors";
+import {
+    changeStatusSupplierService,
+    createSupplierService,
+    findSupplierByIdService,
+    findSuppliersService, getPagedSuppliersService, updateSupplierService,
+} from "../services/supplier.service";
 
-export const createCustomerController = async (
+export const createSupplierController = async (
     req: IRequest,
     res: IResponse
 ): Promise<any> => {
     try {
         const body = req.body;
-        const response = await createCustomerService(body);
-        return sendResponse(
-            res,
-            201,
-            "Customer created successfully",
-            response
-        );
+        const response = await createSupplierService(body);
+        return sendResponse(res, 201, "Supplier added successfully", response);
     } catch (error: any) {
         console.error(error.message);
         return sendResponse(
             res,
             500,
-            "Internal server error",
+            errors.INTERNAL_SERVER_ERROR,
             null,
             error.message
         );
     }
 };
 
-export const getAllCustomersController = async (
+export const getSuppliersController = async (
     req: IRequest,
     res: IResponse
 ): Promise<any> => {
     try {
         const body = req.body;
-        const response = await findAllCustomersService(body);
+        const response = await findSuppliersService(body);
         return sendResponse(
             res,
             200,
-            "Customers fetched successfully",
-            response,
-            null
-        );
-    } catch (error: any) {
-        console.error(error.message);
-        return sendResponse(
-            res,
-            500,
-            "Internal server error",
-            null,
-            error.message
-        );
-    }
-};
-
-export const getCustomerController = async (
-    req: IRequest,
-    res: IResponse
-): Promise<any> => {
-    try {
-        const { id } = req.params;
-        const response = await findCustomerByIdService(id);
-        return sendResponse(
-            res,
-            200,
-            "Customer fetched successfully",
-            response,
-            null
-        );
-    } catch (error: any) {
-        console.error(error.message);
-        return sendResponse(
-            res,
-            500,
-            "Internal server error",
-            null,
-            error.message
-        );
-    }
-};
-
-export const updateCustomerController = async (
-    req: IRequest,
-    res: IResponse
-): Promise<any> => {
-    try {
-        const body = req.body;
-        const { id } = req.params;
-        const response = await updateCustomerService(id, body);
-        return sendResponse(
-            res,
-            200,
-            "Customer updated successfully",
-            response,
-            null
-        );
-    } catch (error: any) {
-        console.error(error.message);
-        return sendResponse(
-            res,
-            500,
-            "Internal server error",
-            null,
-            error.message
-        );
-    }
-};
-
-export const changeStatusCustomerController = async (
-    req: IRequest,
-    res: IResponse
-): Promise<any> => {
-    try {
-        const { id } = req.params;
-        const body = req.body;
-        const response = await changeStatusCustomerService(id, body);
-        return sendResponse(
-            res,
-            200,
-            "Customer status changed successfully",
+            "Suppliers fetched successfully",
             response
         );
     } catch (error: any) {
@@ -139,13 +53,90 @@ export const changeStatusCustomerController = async (
     }
 };
 
-export const getPagedCustomersController = async (
+export const getSupplierController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const { id } = req.params;
+        const response = await findSupplierByIdService(id);
+        return sendResponse(
+            res,
+            200,
+            "Supplier fetched successfully",
+            response
+        );
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            errors.INTERNAL_SERVER_ERROR,
+            null,
+            error.message
+        );
+    }
+};
+
+export const updateSupplierController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const { id } = req.params;
+        const body = req.body;
+        const response = await updateSupplierService(id, body);
+        return sendResponse(
+            res,
+            200,
+            "Supplier updated successfully",
+            response
+        );
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            errors.INTERNAL_SERVER_ERROR,
+            null,
+            error.message
+        );
+    }
+};
+
+export const changeStatusSupplierController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const { id } = req.params;
+        const body = req.body;
+        const response = await changeStatusSupplierService(id, body);
+        return sendResponse(
+            res,
+            200,
+            "Supplier status changed successfully",
+            response
+        );
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            errors.INTERNAL_SERVER_ERROR,
+            null,
+            error.message
+        );
+    }
+};
+
+export const getPagedSuppliersController = async (
     req: IRequest,
     res: IResponse
 ): Promise<any> => {
     try {
         const body = req.body;
-        const response = await getPagedCustomersService(body);
+        const response = await getPagedSuppliersService(body);
         return sendResponse(
             res,
             200,

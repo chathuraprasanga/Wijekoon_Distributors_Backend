@@ -110,6 +110,7 @@ export const confirmLoginService = async (user: any) => {
             username: user.username,
             email: user.email,
             phone: user.phone,
+            _id: user._id,
         };
     } catch (e: any) {
         console.error(e.message);
@@ -119,13 +120,15 @@ export const confirmLoginService = async (user: any) => {
 
 export const tokenRefreshService = async (data: any) => {
     try {
-        const decoded: any = jwt.verify(data.refreshToken, REFRESH_TOKEN_SECRET);
+        const decoded: any = jwt.verify(
+            data.refreshToken,
+            REFRESH_TOKEN_SECRET
+        );
         const user: any = await findUserByUuidService(decoded.uuid);
-        const payload = {
+        return {
             accessToken: await generateAccessToken(user),
             refreshToken: await generateRefreshToken(user),
         };
-        return payload;
     } catch (e: any) {
         console.error(e.message);
         throw e;
