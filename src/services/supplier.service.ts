@@ -2,7 +2,8 @@ import {
     countSuppliers,
     createSupplierRepo,
     findSupplierRepo,
-    findSuppliersRepo, getPagedSuppliersRepo,
+    findSuppliersRepo,
+    getPagedSuppliersRepo,
     updateSupplierRepo,
 } from "../repositories/supplier.repository";
 import errors from "../constants/errors";
@@ -73,14 +74,19 @@ export const changeStatusSupplierService = async (id: string, data: any) => {
 export const getPagedSuppliersService = async (data: any) => {
     try {
         const filters = data.filters;
-        const { searchQuery, pageSize, pageIndex, sort } = filters;
-        const matchFilter: any = {};
+        const { searchQuery, pageSize, pageIndex, sort, status } = filters;
+        const matchFilter: any = { $and: [] };
+
         if (searchQuery) {
             matchFilter.$or = [
                 { name: { $regex: searchQuery, $options: "i" } },
                 { email: { $regex: searchQuery, $options: "i" } },
-                { phone: { $regex: searchQuery, $options: "i" } },
+                { phone: { $regex: searchQuery, $options: "i" } }
             ];
+        }
+
+        if (status) {
+            matchFilter.$and.push({ status: status === "ACTIVE" });
         }
 
         const response = await getPagedSuppliersRepo(

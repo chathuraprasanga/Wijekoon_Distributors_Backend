@@ -2,7 +2,8 @@ import {
     countProducts,
     createProductRepo,
     findProductRepo,
-    findProductsRepo, getPagedProductsRepo,
+    findProductsRepo,
+    getPagedProductsRepo,
     updateProductRepo,
 } from "../repositories/product.repository";
 import errors from "../constants/errors";
@@ -48,9 +49,11 @@ export const findProductByIdService = async (id: string) => {
 
 export const updateProductService = async (id: string, data: any) => {
     try {
-        const existProducts = await findProductsRepo({ productCode: data.productCode });
+        const existProducts = await findProductsRepo({
+            productCode: data.productCode,
+        });
         const duplicateProducts = existProducts.filter(
-            (c:any) => !c._id.equals(new ObjectId(id)) // Use .equals() for ObjectId comparison
+            (c: any) => !c._id.equals(new ObjectId(id)) // Use .equals() for ObjectId comparison
         );
 
         if (duplicateProducts.length > 0) {
@@ -76,13 +79,17 @@ export const changeStatusProductService = async (id: string, data: any) => {
 export const getPagedProductsService = async (data: any) => {
     try {
         const filters = data.filters;
-        const { searchQuery, pageSize, pageIndex, sort } = filters;
-        const matchFilter: any = {};
+        const { searchQuery, pageSize, pageIndex, sort, status } = filters;
+        const matchFilter: any = { $and: [] };
         if (searchQuery) {
             matchFilter.$or = [
                 { name: { $regex: searchQuery, $options: "i" } },
                 { productCode: { $regex: searchQuery, $options: "i" } },
             ];
+        }
+
+        if (status) {
+            matchFilter.$and.push({ status: status === "ACTIVE" });
         }
 
         const response = await getPagedProductsRepo(
@@ -101,4 +108,3 @@ export const getPagedProductsService = async (data: any) => {
         throw e;
     }
 };
-
