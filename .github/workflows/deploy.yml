@@ -1,0 +1,52 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy Backend to Droplet
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up SSH
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PRIVATE_KEY }}
+
+      # Test SSH connection
+      - name: Test SSH Connection
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }} "echo 'SSH connection successful'"
+
+      # Install dependencies and build
+      - name: Build Backend
+        run: |
+          npm ci
+          npm run build
+
+      # Deploy to droplet
+      - name: Deploy to Droplet
+        run: |
+          # SSH into the server and clean up the backend directory
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }} << 'EOF'
+            rm -rf ${{ secrets.BACKEND_PATH }}/*
+            mkdir -p ${{ secrets.BACKEND_PATH }}
+          EOF
+
+          # Copy files to the backend directory on the server
+          scp -r * ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }}:${{ secrets.BACKEND_PATH }}
+
+          # SSH into the server again to install dependencies and restart the backend
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }} << 'EOF'
+            cd ${{ secrets.BACKEND_PATH }}
+            npm install --production
+            pm2 restart all || pm2 start server.js --name backend
+          EOF
