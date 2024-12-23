@@ -18,6 +18,7 @@ export const createUserService = async (data: any) => {
         if (isExistingUser.length > 0) {
             throw new Error(ERROR_MESSAGES.USER_IS_ALREADY_EXIST);
         }
+        data.password = await bcrypt.hash(data.password, 10);
         data.uuid = uuid();
         return await createUserRepo(data);
     } catch (e: any) {
@@ -65,6 +66,7 @@ export const userLoginService = async (data: any) => {
         if (!user) {
             throw new Error("user not found");
         }
+        console.log("p", user.password);
         const isPasswordMatch = await bcrypt.compare(password, user.password);
         if (!isPasswordMatch) {
             throw new Error("Password is invalid");
