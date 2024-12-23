@@ -6,6 +6,7 @@ const startup = () => `
      _/   \\_ |_____  |_____| |    \\_  |       __|__ |_____| |  \\_|
      ${packageInfo.name}
      v${packageInfo.version}
+     Environment: ${process.env.NODE_ENV}
 `
 
 export default startup
