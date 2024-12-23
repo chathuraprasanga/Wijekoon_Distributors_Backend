@@ -57,7 +57,7 @@ export const confirmLoginController = async (req: IRequest, res: IResponse): Pro
         console.error(error.message);
         return sendResponse(
             res,
-            500,
+            401,
             "Internal server error",
             null,
             error.message
