@@ -5,7 +5,6 @@ import {
     createInvoiceService, findAllInvoiceService, getInvoiceByIdService, getPagedInvoicesService,
     updateInvoiceService,
 } from "../services/invoice.service";
-import { getPagedChequesService } from "../services/cheque.service";
 
 export const createInvoiceController = async (
     req: IRequest,

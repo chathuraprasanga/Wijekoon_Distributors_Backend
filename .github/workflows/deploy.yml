@@ -1,0 +1,65 @@
+name: Deploy Wijekoon Distributors Backend to Droplet
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Wijekoon Distributors Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up SSH agent
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.PRIVATE_KEY }}
+
+      # Test SSH connection
+      - name: Test SSH Connection
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }} "echo 'SSH connection successful!'"
+
+      # Debug PATH and npm availability
+      - name: Test PATH and npm availability
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }} << 'EOF'
+            set -e
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+            nvm use node
+            echo "Node version: $(node -v)"
+            echo "npm version: $(npm -v)"
+          EOF
+
+      # Deploy Wijekoon Distributors Backend to Droplet
+      - name: Deploy Wijekoon Distributors Backend to Droplet
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }} << 'EOF'
+            set -e
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+            nvm use node
+            cd /var/www/wijekoon-distributors/backend
+            rm -rf dist
+
+            git reset --hard
+            git pull origin main
+            npm install --force
+
+            npm run lint
+            npm run build
+
+            pm2 describe "wd-server" >/dev/null 2>&1 || pm2 start npm --name "wd-server" -- start
+            pm2 restart "wd-server" --update-env
+
+            pm2 save
+          EOF
