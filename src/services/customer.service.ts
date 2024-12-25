@@ -43,6 +43,7 @@ const findCustomerByPhoneService = async (phone: string) => {
 export const findAllCustomersService = async (data: any) => {
     try {
         const filters = data.filters;
+        console.log(filters);
         return await findCustomersRepo({});
     } catch (e: any) {
         console.error(e.message);
