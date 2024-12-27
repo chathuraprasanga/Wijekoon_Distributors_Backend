@@ -1,5 +1,6 @@
 import { IRequest, IResponse } from "../interfaces/dto";
 import {
+    changePasswordService,
     confirmLoginService,
     createUserService,
     tokenRefreshService,
@@ -48,7 +49,10 @@ export const loginService = async (
     }
 };
 
-export const confirmLoginController = async (req: IRequest, res: IResponse): Promise<any> => {
+export const confirmLoginController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
     try {
         const { user } = req;
         const response = await confirmLoginService(user);
@@ -67,7 +71,7 @@ export const confirmLoginController = async (req: IRequest, res: IResponse): Pro
 
 export const tokenRefreshController = async (
     req: IRequest,
-    res: IResponse,
+    res: IResponse
 ): Promise<any> => {
     try {
         const body = req.body;
@@ -80,7 +84,27 @@ export const tokenRefreshController = async (
             500,
             "Token refreshed failed",
             null,
-            error.message,
+            error.message
+        );
+    }
+};
+
+export const changePasswordController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const { body, user } = req;
+        const payload = await changePasswordService(body, user);
+        return sendResponse(res, 200, "Password changed successfully", payload);
+    } catch (error: any) {
+        console.error(error);
+        return sendResponse(
+            res,
+            500,
+            "Password changed failed",
+            null,
+            error.message
         );
     }
 };

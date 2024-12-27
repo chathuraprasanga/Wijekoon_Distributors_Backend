@@ -2,6 +2,7 @@ import {
     aggregateUserRepo,
     createUserRepo,
     findUserRepo,
+    updateUserRepo,
 } from "../repositories/user.repository";
 import { v4 as uuid } from "uuid";
 import ERROR_MESSAGES from "../constants/errors";
@@ -131,6 +132,26 @@ export const tokenRefreshService = async (data: any) => {
             accessToken: await generateAccessToken(user),
             refreshToken: await generateRefreshToken(user),
         };
+    } catch (e: any) {
+        console.error(e.message);
+        throw e;
+    }
+};
+
+export const changePasswordService = async (data: any, user: any) => {
+    try {
+        const isCurrentPasswordMatch = await bcrypt.compare(
+            data.currentPassword,
+            user.password
+        );
+        if (!isCurrentPasswordMatch) {
+            throw new Error("Current password is wrong");
+        }
+        if (data.newPassword !== data.confirmPassword) {
+            throw new Error("New password and Confirm password is not match");
+        }
+        const password = await bcrypt.hash(data.newPassword, 10);
+        return await updateUserRepo({ _id: user._id }, { password: password });
     } catch (e: any) {
         console.error(e.message);
         throw e;
