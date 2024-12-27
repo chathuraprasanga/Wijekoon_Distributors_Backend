@@ -1,7 +1,7 @@
 import { Router } from "express";
 import {
     changePasswordController,
-    confirmLoginController,
+    confirmLoginController, getAllUsersController,
     loginService,
     signupController, tokenRefreshController,
 } from "../controllers/user.controller";
@@ -14,5 +14,6 @@ userRoute.post("/login", loginService);
 userRoute.get("/confirm-login", authMiddleware, confirmLoginController);
 userRoute.post("/token-refresh", tokenRefreshController);
 userRoute.post("/change-password",authMiddleware, changePasswordController);
+userRoute.post("/users",authMiddleware, getAllUsersController);
 
 export default userRoute;

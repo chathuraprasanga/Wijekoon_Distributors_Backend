@@ -3,6 +3,7 @@ import {
     changePasswordService,
     confirmLoginService,
     createUserService,
+    findAllUsersService,
     tokenRefreshService,
     userLoginService,
 } from "../services/user.service";
@@ -98,11 +99,28 @@ export const changePasswordController = async (
         const payload = await changePasswordService(body, user);
         return sendResponse(res, 200, "Password changed successfully", payload);
     } catch (error: any) {
-        console.error(error);
         return sendResponse(
             res,
             500,
             "Password changed failed",
+            null,
+            error.message
+        );
+    }
+};
+
+export const getAllUsersController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const payload = await findAllUsersService({});
+        return sendResponse(res, 200, "Password changed successfully", payload);
+    } catch (error: any) {
+        return sendResponse(
+            res,
+            500,
+            "Get all users failed",
             null,
             error.message
         );

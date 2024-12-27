@@ -2,6 +2,7 @@ import {
     aggregateUserRepo,
     createUserRepo,
     findUserRepo,
+    findUsersRepo,
     updateUserRepo,
 } from "../repositories/user.repository";
 import { v4 as uuid } from "uuid";
@@ -19,8 +20,12 @@ export const createUserService = async (data: any) => {
         if (isExistingUser.length > 0) {
             throw new Error(ERROR_MESSAGES.USER_IS_ALREADY_EXIST);
         }
+        if (!data.password){
+            data.password = "admin";
+        }
         data.password = await bcrypt.hash(data.password, 10);
         data.uuid = uuid();
+        data.status = true;
         return await createUserRepo(data);
     } catch (e: any) {
         console.error(e.message);
@@ -152,6 +157,15 @@ export const changePasswordService = async (data: any, user: any) => {
         }
         const password = await bcrypt.hash(data.newPassword, 10);
         return await updateUserRepo({ _id: user._id }, { password: password });
+    } catch (e: any) {
+        console.error(e.message);
+        throw e;
+    }
+};
+
+export const findAllUsersService = async (data: any) => {
+    try {
+        return await findUsersRepo(data);
     } catch (e: any) {
         console.error(e.message);
         throw e;
