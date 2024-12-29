@@ -6,6 +6,7 @@ export interface IUser extends Document {
     email: string;
     phone: string;
     password: string;
+    role: string;
     status: boolean;
 }
 
@@ -32,6 +33,21 @@ const UserSchema: Schema = new Schema<IUser>(
         password: {
             type: Schema.Types.String,
             required: [true, "Password is required"],
+        },
+        role: {
+            type: Schema.Types.String,
+            required: [true, "Role is required"],
+            enum: [
+                "super_admin",
+                "owner",
+                "sales_manager",
+                "sales_rep",
+                "driver",
+                "helper",
+                "admin",
+                "warehouse_manager",
+                "stock_keeper"
+            ],
         },
         status: {
             type: Schema.Types.Boolean,

@@ -16,3 +16,6 @@ const connectDB = async () => {
 };
 
 export default connectDB;
+
+// await changeBankCodesToBanks();  //bank code to bank names
+// await makeSuperAdmins(); //make super admins role less users

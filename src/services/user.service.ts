@@ -118,6 +118,7 @@ export const confirmLoginService = async (user: any) => {
             username: user.username,
             email: user.email,
             phone: user.phone,
+            role: user.role,
             _id: user._id,
         };
     } catch (e: any) {
