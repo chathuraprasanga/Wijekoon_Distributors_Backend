@@ -12,6 +12,7 @@ const ERROR_MESSAGES = {
     INVOICE_ALREADY_EXIST: "Invoice already exists by this invoice number. Please check the invoice number.",
     INVALID_CUSTOMER: "Invalid customer. Please check again.",
     INVALID_SUPPLIER: "Invalid supplier. Please check again.",
+    INVALID_BANK_ACCOUNT: "Invalid bank account. Please check again.",
     EMAIL_IS_ALREADY_AVAILABLE: "Email is already available. Please check email again.",
 };
 

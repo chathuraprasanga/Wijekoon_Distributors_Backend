@@ -7,6 +7,7 @@ import chequeRoute from "./cheque.route";
 import invoiceRoute from "./invoice.route";
 import dashboardRoute from "./dashboard.route";
 import bankDetailRoute from "./bankDetail.route";
+import chequePaymentRoute from "./chequePayment.route";
 
 const routes = Router();
 
@@ -18,5 +19,6 @@ routes.use("/cheques", chequeRoute);
 routes.use("/invoices", invoiceRoute);
 routes.use("/dashboard", dashboardRoute);
 routes.use("/bank-details", bankDetailRoute);
+routes.use("/cheque-payment", chequePaymentRoute);
 
 export default routes;
