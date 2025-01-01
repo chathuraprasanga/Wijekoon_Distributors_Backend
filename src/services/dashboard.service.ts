@@ -7,6 +7,7 @@ import {
     findChequesRepo,
 } from "../repositories/cheque.repository";
 import { countInvoices } from "../repositories/invoice.repository";
+import { calculateUnpaidInvoiceAmount, getUnpaidInvoicesBySupplier } from "./invoice.service";
 
 export const findDashboardDetailsService = async (data: any) => {
     try {
@@ -23,6 +24,10 @@ export const findDashboardDetailsService = async (data: any) => {
                 count: chequesCount,
                 amount: totalAmount,
             },
+            invoicesToBePaid: {
+                toBePaid: await calculateUnpaidInvoiceAmount(),
+                supplierWise: await getUnpaidInvoicesBySupplier(),
+            }
         };
     } catch (e: any) {
         console.error(e.message);
