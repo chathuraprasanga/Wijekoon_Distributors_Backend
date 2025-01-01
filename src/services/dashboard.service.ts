@@ -8,10 +8,12 @@ import {
 } from "../repositories/cheque.repository";
 import { countInvoices } from "../repositories/invoice.repository";
 import { calculateUnpaidInvoiceAmount, getUnpaidInvoicesBySupplier } from "./invoice.service";
+import { findAllChequePaymentsRepo } from "../repositories/chequePayment.repository";
 
 export const findDashboardDetailsService = async (data: any) => {
     try {
         const { chequesCount, totalAmount } = await getChequesToDeposit();
+        const { chequePaymentsCount, totalPaymentAmount } = await getChequesComesToTransfer();
         return {
             user: await findUserRepo({ _id: data.userId }),
             usersCount: await countUsers({}),
@@ -23,6 +25,10 @@ export const findDashboardDetailsService = async (data: any) => {
             chequesToDeposit: {
                 count: chequesCount,
                 amount: totalAmount,
+            },
+            chequesComesToTransfer: {
+                count: chequePaymentsCount,
+                amount: totalPaymentAmount,
             },
             invoicesToBePaid: {
                 toBePaid: await calculateUnpaidInvoiceAmount(),
@@ -53,6 +59,30 @@ const getChequesToDeposit = async () => {
             0
         );
         return { chequesCount, totalAmount };
+    } catch (e: any) {
+        console.error(e.message);
+        throw e;
+    }
+};
+
+const getChequesComesToTransfer = async () => {
+    try {
+        const date = new Date();
+        const todayUtc = new Date(
+            Date.UTC(
+                date.getUTCFullYear(),
+                date.getUTCMonth(),
+                date.getUTCDate()
+            )
+        );
+        const today = todayUtc.toISOString();
+        const chequePayments = await findAllChequePaymentsRepo({ date: today });
+        const chequePaymentsCount = chequePayments.length;
+        const totalPaymentAmount = chequePayments.reduce(
+            (sum, cheque) => sum + cheque.amount,
+            0
+        );
+        return { chequePaymentsCount, totalPaymentAmount };
     } catch (e: any) {
         console.error(e.message);
         throw e;
