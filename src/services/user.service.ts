@@ -72,7 +72,6 @@ export const userLoginService = async (data: any) => {
         if (!user) {
             throw new Error("user not found");
         }
-        console.log("p", user.password);
         const isPasswordMatch = await bcrypt.compare(password, user.password);
         if (!isPasswordMatch) {
             throw new Error("Password is invalid");

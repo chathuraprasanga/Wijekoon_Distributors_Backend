@@ -34,7 +34,7 @@ export const getAllInvoiceController = async (
         const response = await findAllInvoiceService();
         return sendResponse(res, 200, "Invoices fetched successfully", response);
     } catch (error: any) {
-        console.log(error.message);
+        console.error(error.message);
         return sendResponse(
             res,
             500,

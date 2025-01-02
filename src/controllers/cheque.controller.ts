@@ -34,7 +34,7 @@ export const getAllChequeController = async (
         const response = await findAllChequeService();
         return sendResponse(res, 200, "Cheques fetched successfully", response);
     } catch (error: any) {
-        console.log(error.message);
+        console.error(error.message);
         return sendResponse(
             res,
             500,
