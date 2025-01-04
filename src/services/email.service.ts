@@ -4,7 +4,6 @@ import {
     EMAIL_TYPES,
 } from "../helpers/emailHandler";
 import nodemailer from "nodemailer";
-import path from "path";
 
 export const sendEmail = async (type: any, to: any, data: any) => {
     try {
