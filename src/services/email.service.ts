@@ -37,15 +37,12 @@ export const sendEmail = async (type: any, to: any, data: any) => {
             attachments: [
                 {
                     filename: "wd.png",
-                    path: path.resolve(__dirname, "../helpers/assets/wd.png"),
+                    path: "https://firebasestorage.googleapis.com/v0/b/wijekoon-distributors.appspot.com/o/wd-app%2Flogo1.png?alt=media&token=172aee8e-1dfc-4908-9481-46d63d57d9a7",
                     cid: "app-logo", // Make sure to match this in <img src="cid:app-logo">
                 },
                 {
                     filename: "xcorpion.png",
-                    path: path.resolve(
-                        __dirname,
-                        "../helpers/assets/xcorpion.png"
-                    ),
+                    path: "https://firebasestorage.googleapis.com/v0/b/wijekoon-distributors.appspot.com/o/wd-app%2Flogo.png?alt=media&token=25e31025-b72e-4f58-9810-6d8c56e68982",
                     cid: "developer-logo", // Match this in <img src="cid:developer-logo">
                 },
             ],
