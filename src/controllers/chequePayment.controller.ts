@@ -48,7 +48,7 @@ export const getAllChequePaymentsController = async (
             response
         );
     } catch (error: any) {
-        console.log(error.message);
+        console.error(error.message);
         return sendResponse(
             res,
             500,
