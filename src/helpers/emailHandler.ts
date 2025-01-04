@@ -37,7 +37,7 @@ export const createEmailBody = async (type: string, data: any) => {
                     <p>Role: ${data.role}</p>
                     <p>Password: ${data.password}</p>
                     <br>
-                    <p>Please change your password immediatly. Click here to <a href="wd-app.xcorpion.xyz/login">login</a></p>
+                    <p>Please change your password immediatly. Click here to <a href="https://www.wd-app.xcorpion.xyz/login">login</a></p>
                     <br>
                     <p>If you have any questions, feel free to reach out to our support team at <a href="mailto:support@xcorpion.xyz">support@xcorpion.xyz</a>.</p>
                     <p>Thank you for joining us!</p>
