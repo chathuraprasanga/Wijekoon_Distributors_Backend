@@ -8,6 +8,7 @@ import {
     userLoginService,
 } from "../services/user.service";
 import { sendResponse } from "../helpers/sendResponse";
+import { createNotificationsForNewUserAdding } from "../services/email.service";
 
 export const signupController = async (
     req: IRequest,
@@ -16,7 +17,7 @@ export const signupController = async (
     try {
         const body = req.body;
         const response = await createUserService(body);
-        console.log("crated user:", response);
+        await createNotificationsForNewUserAdding(response);
         return sendResponse(res, 201, "User signup successfully");
     } catch (error: any) {
         console.error(error.message);

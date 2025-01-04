@@ -20,18 +20,26 @@ export const createUserService = async (data: any) => {
         if (isExistingUser.length > 0) {
             throw new Error(ERROR_MESSAGES.USER_IS_ALREADY_EXIST);
         }
-        if (!data.password){
-            data.password = "admin";
+        if (!data.password) {
+            data.password = generateRandomPassword();
         }
+        const mailPw = data.password;
         data.password = await bcrypt.hash(data.password, 10);
         data.uuid = uuid();
         data.status = true;
-        return await createUserRepo(data);
+        const newUser = await createUserRepo(data);
+        return { ...newUser.toObject(), mailPw };
     } catch (e: any) {
         console.error(e.message);
         throw e;
     }
 };
+
+const generateRandomPassword = (length = 12) => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$!";
+    return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+};
+
 
 const checkExistingUserService = (email: string, phone: string) => {
     const pipeline = [
