@@ -7,7 +7,7 @@ export const EMAIL_TYPES = {
 export const createSubjectToEmail = async (type: string, data: any) => {
     try {
         if (type === EMAIL_TYPES.ADD_USER) {
-            return `Welcome to Wijekoon Distributors, ${data.username}!`;
+            return `Welcome to Wijekoon Distributors, ${data.name}!`;
         }
         if (type === EMAIL_TYPES.FORGOT_PASSWORD) {
             return `Reset Your Password - Wijekoon Distributors`;
@@ -28,7 +28,7 @@ export const createEmailBody = async (type: string, data: any) => {
             ${getHeader("Welcome to Wijekoon Distributors")}
             <tr>
                 <td class="body-content">
-                    <p>Dear ${data.username},</p>
+                    <p>Dear ${data.name},</p>
                     <p>We are excited to welcome you to Wijekoon Distributors! Your account has been successfully created.</p>
                     <br>
                     <p>Here is your login details</p>
