@@ -50,7 +50,7 @@ const ChequeSchema: Schema = new Schema<ICheques>(
         },
         chequeStatus: {
             type: Schema.Types.String,
-            enum: ["PENDING", "DEPOSITED", "RETURNED", "COMPLETED"],
+            enum: ["PENDING", "DEPOSITED","SEND TO SUPPLIER", "RETURNED", "COMPLETED"],
             required: [true, "Cheque status is required"],
             default: "PENDING",
         },

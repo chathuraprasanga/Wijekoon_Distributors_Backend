@@ -7,13 +7,17 @@ import {
     findChequesRepo,
 } from "../repositories/cheque.repository";
 import { countInvoices } from "../repositories/invoice.repository";
-import { calculateUnpaidInvoiceAmount, getUnpaidInvoicesBySupplier } from "./invoice.service";
+import {
+    calculateUnpaidInvoiceAmount,
+    getUnpaidInvoicesBySupplier,
+} from "./invoice.service";
 import { findAllChequePaymentsRepo } from "../repositories/chequePayment.repository";
 
 export const findDashboardDetailsService = async (data: any) => {
     try {
         const { chequesCount, totalAmount } = await getChequesToDeposit();
-        const { chequePaymentsCount, totalPaymentAmount } = await getChequesComesToTransfer();
+        const { chequePaymentsCount, totalPaymentAmount } =
+            await getChequesComesToTransfer();
         return {
             user: await findUserRepo({ _id: data.userId }),
             usersCount: await countUsers({}),
@@ -33,7 +37,7 @@ export const findDashboardDetailsService = async (data: any) => {
             invoicesToBePaid: {
                 toBePaid: await calculateUnpaidInvoiceAmount(),
                 supplierWise: await getUnpaidInvoicesBySupplier(),
-            }
+            },
         };
     } catch (e: any) {
         console.error(e.message);
@@ -52,12 +56,18 @@ const getChequesToDeposit = async () => {
             )
         );
         const today = todayUtc.toISOString();
-        const cheques = await findChequesRepo({ depositDate: today });
+
+        const cheques = await findChequesRepo({
+            depositDate: { $lte: today }, // Less than or equal to today
+            chequeStatus: "PENDING",
+        });
+
         const chequesCount = cheques.length;
         const totalAmount = cheques.reduce(
             (sum, cheque) => sum + cheque.amount,
             0
         );
+
         return { chequesCount, totalAmount };
     } catch (e: any) {
         console.error(e.message);
