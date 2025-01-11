@@ -27,9 +27,13 @@ export const createInvoiceService = async (data: any) => {
     }
 };
 
-export const findAllInvoiceService = async () => {
+export const findAllInvoiceService = async (data: any) => {
     try {
-        const pipeline = [
+        const { filters } = data; // Destructure 'filter' from 'data'
+        const { status, supplier } = filters || {}; // Destructure 'status' and 'supplier', default to an empty object if 'filter' is undefined
+        console.log(supplier);
+
+        const pipeline: any[] = [
             {
                 $lookup: {
                     as: "supplier",
@@ -45,6 +49,22 @@ export const findAllInvoiceService = async () => {
                 },
             },
         ];
+
+        const match: any = {};
+
+        if (status) {
+            match.status = status;
+        }
+
+        if (supplier) {
+            match["supplier._id"] = new ObjectId(supplier);
+        }
+
+        if (Object.keys(match).length > 0) {
+            pipeline.push({
+                $match: match,
+            });
+        }
         return await aggregateInvoiceRepo(pipeline);
     } catch (e: any) {
         console.error(e.message);
@@ -175,7 +195,9 @@ export const getUnpaidInvoicesBySupplier = async () => {
             {
                 $project: {
                     _id: "$_id",
-                    supplierName: { $arrayElemAt: ["$supplierDetails.name", 0] },
+                    supplierName: {
+                        $arrayElemAt: ["$supplierDetails.name", 0],
+                    },
                     totalAmount: 1,
                     invoiceCount: 1,
                     invoices: 1,

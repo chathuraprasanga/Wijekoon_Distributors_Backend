@@ -3,7 +3,10 @@ import { sendResponse } from "../helpers/sendResponse";
 import errors from "../constants/errors";
 import {
     createChequeService,
-    findAllChequeService, getChequeByIdService, getPagedChequesService, updateChequeService,
+    findAllChequeService,
+    getChequeByIdService,
+    getPagedChequesService,
+    updateChequeService,
 } from "../services/cheque.service";
 
 export const createChequeController = async (
@@ -31,7 +34,8 @@ export const getAllChequeController = async (
     res: IResponse
 ): Promise<any> => {
     try {
-        const response = await findAllChequeService();
+        const body = req.body;
+        const response = await findAllChequeService(body);
         return sendResponse(res, 200, "Cheques fetched successfully", response);
     } catch (error: any) {
         console.error(error.message);
@@ -86,13 +90,21 @@ export const updateChequeController = async (
     }
 };
 
-export const chequeStatusChangeController = async(req: IRequest, res: IResponse): Promise<any> => {
+export const chequeStatusChangeController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
     try {
         const { id } = req.params;
         const body = req.body;
         const response = await updateChequeService(id, body);
-        return sendResponse(res, 200, "Cheque status changed successfully", response);
-    }catch (error: any) {
+        return sendResponse(
+            res,
+            200,
+            "Cheque status changed successfully",
+            response
+        );
+    } catch (error: any) {
         console.error(error.message);
         return sendResponse(
             res,
@@ -102,7 +114,7 @@ export const chequeStatusChangeController = async(req: IRequest, res: IResponse)
             error.message
         );
     }
-}
+};
 
 export const getPagedChequesController = async (
     req: IRequest,
