@@ -1,8 +1,10 @@
 import {
-    aggregateChequeRepo, countCheques,
+    aggregateChequeRepo,
+    countCheques,
     createChequeRepo,
     findChequeRepo,
-    findChequesRepo, getPagedChequesRepo,
+    findChequesRepo,
+    getPagedChequesRepo,
     updateChequeRepo,
 } from "../repositories/cheque.repository";
 import errors from "../constants/errors";
@@ -26,24 +28,50 @@ export const createChequeService = async (data: any) => {
     }
 };
 
-export const findAllChequeService = async () => {
+export const findAllChequeService = async (data: any) => {
     try {
-        const pipeline = [
+        const { filters } = data;
+        const { status, chequeStatus } = filters;
+
+        const pipeline: any = [
             {
                 $lookup: {
                     as: "customer",
                     from: "customer",
                     foreignField: "_id",
-                    localField: "customer"
-                }
+                    localField: "customer",
+                },
             },
             {
                 $unwind: {
                     path: "$customer",
-                    preserveNullAndEmptyArrays: true
-                }
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+        ];
+
+        const match: any = {};
+
+        if (status) {
+            match.status = status;
+        }
+
+        if (chequeStatus) {
+            if (chequeStatus.length > 1) {
+                match["$or"] = chequeStatus.map((status: string) => ({
+                    chequeStatus: status,
+                }));
+            } else {
+                match["chequeStatus"] = chequeStatus[0];
             }
-        ]
+        }
+
+        if (Object.keys(match).length > 0) {
+            pipeline.push({
+                $match: match,
+            });
+        }
+
         return await aggregateChequeRepo(pipeline);
     } catch (e: any) {
         console.error(e.message);
@@ -84,7 +112,8 @@ export const getChequeByIdService = async (id: string) => {
 export const getPagedChequesService = async (data: any) => {
     try {
         const filters = data.filters;
-        const { customer, pageSize, pageIndex, sort, status, depositDate } = filters;
+        const { customer, pageSize, pageIndex, sort, status, depositDate } =
+            filters;
         const matchFilter: any = { $and: [] };
 
         if (customer) {
