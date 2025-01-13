@@ -8,7 +8,6 @@ import {
 } from "../services/invoice.service";
 import {
     createNotificationsForBulkInvoicesPayments,
-    createNotificationsForNewUserAdding,
 } from "../services/email.service";
 
 export const createInvoiceController = async (
