@@ -14,7 +14,7 @@ import { createChequePaymentRepo } from "../repositories/chequePayment.repositor
 import { findSupplierRepo } from "../repositories/supplier.repository";
 import {
     createBulkInvoicePaymentRepo,
-    findBulkInvoicePaymentRepo,
+    findBulkInvoicePaymentRepo, getPagedBulkInvoicePaymentsRepo,
 } from "../repositories/bulkInvoicePayment.repository";
 
 const ObjectId = mongoose.Types.ObjectId;
@@ -107,6 +107,15 @@ export const updateInvoiceService = async (id: string, data: any) => {
 export const getInvoiceByIdService = async (id: string) => {
     try {
         return await findInvoiceRepo({ _id: id });
+    } catch (e: any) {
+        console.error(e.message);
+        throw e;
+    }
+};
+
+export const getBulkInvoicePaymentByIdService = async (id: string) => {
+    try {
+        return await findBulkInvoicePaymentRepo({ _id: id });
     } catch (e: any) {
         console.error(e.message);
         throw e;
@@ -224,7 +233,6 @@ export const getUnpaidInvoicesBySupplier = async () => {
 
 export const createBulkInvoicePaymentService = async (data: any) => {
     try {
-        console.log("DATA", data);
         const paymentId = await generatePaymentId();
 
         const supplier: any | null = await findSupplierRepo({
@@ -322,5 +330,33 @@ const generatePaymentId = async () => {
         return `W-PAY-${String(newPaymentIdNumber).padStart(4, "0")}`;
     } else {
         return "W-PAY-0001";
+    }
+};
+
+export const getPagedBulkInvoicePaymentsService = async (data: any) => {
+    try {
+        const filters = data.filters;
+        const { supplier, pageSize, pageIndex, sort } =
+            filters;
+        const matchFilter: any = { $and: [] };
+
+        if (supplier) {
+            matchFilter.$and.push({ supplier: new ObjectId(supplier) });
+        }
+
+        const response = await getPagedBulkInvoicePaymentsRepo(
+            matchFilter,
+            pageSize,
+            pageIndex,
+            sort
+        );
+        const documentCount = await countInvoices(matchFilter);
+        return {
+            response,
+            metadata: { total: documentCount, pageIndex },
+        };
+    } catch (e: any) {
+        console.error(e.message);
+        throw e;
     }
 };

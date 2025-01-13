@@ -3,7 +3,11 @@ import { sendResponse } from "../helpers/sendResponse";
 import errors from "../constants/errors";
 import {
     createBulkInvoicePaymentService,
-    createInvoiceService, findAllInvoiceService, getInvoiceByIdService, getPagedInvoicesService,
+    createInvoiceService,
+    findAllInvoiceService, getBulkInvoicePaymentByIdService,
+    getInvoiceByIdService,
+    getPagedBulkInvoicePaymentsService,
+    getPagedInvoicesService,
     updateInvoiceService,
 } from "../services/invoice.service";
 import {
@@ -58,6 +62,26 @@ export const getInvoiceController = async (
         const { id } = req.params;
         const response = await getInvoiceByIdService(id);
         return sendResponse(res, 200, "Invoice fetched successfully", response);
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            errors.INTERNAL_SERVER_ERROR,
+            null,
+            error.message
+        );
+    }
+};
+
+export const getBulkInvoicePaymentController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const { id } = req.params;
+        const response = await getBulkInvoicePaymentByIdService(id);
+        return sendResponse(res, 200, "Bulk invoice payment fetched successfully", response);
     } catch (error: any) {
         console.error(error.message);
         return sendResponse(
@@ -147,6 +171,32 @@ export const createBulkInvoicePaymentController = async (
             res,
             200,
             "Bulk Invoice Payment created successfully",
+            response,
+            null
+        );
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            "Internal server error",
+            null,
+            error.message
+        );
+    }
+};
+
+export const getPagedBulkInvoicePaymentsController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const body = req.body;
+        const response = await getPagedBulkInvoicePaymentsService(body);
+        return sendResponse(
+            res,
+            200,
+            "Paged bulk invoice payments fetched successfully",
             response,
             null
         );

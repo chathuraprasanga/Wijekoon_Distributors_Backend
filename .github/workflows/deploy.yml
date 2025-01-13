@@ -49,17 +49,32 @@ jobs:
             [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
             nvm use node
             cd /var/www/wijekoon-distributors/backend
-            rm -rf dist
 
+            # Clean previous build
+            rm -rf dist
             git reset --hard
             git pull origin main
+
+            # Install dependencies
             npm install --force
 
+            # Run linting
             npm run lint
+
+            # Build the project
             npm run build
 
+            # Memory optimization: Set node memory limit to 512MB
+            export NODE_OPTIONS="--max_old_space_size=512"
+
+            # Restart the PM2 process if it's already running or start a new one
             pm2 describe "wd-server" >/dev/null 2>&1 || pm2 start npm --name "wd-server" -- start
             pm2 restart "wd-server" --update-env
 
+            # Save the PM2 process list and environment
             pm2 save
+
+            # Clean up unused npm and node_modules cache to free up memory
+            npm cache clean --force
+            sudo pkill -KILL -u $(whoami) # Kill any active user sessions
           EOF
