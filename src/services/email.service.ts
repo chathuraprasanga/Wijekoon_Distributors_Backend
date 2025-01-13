@@ -56,7 +56,6 @@ export const sendEmail = async (type: any, to: any, data: any) => {
 
 export const createNotificationsForNewUserAdding = async (data: any) => {
     try {
-        console.log("data", data);
         const to = data.email;
         const type = EMAIL_TYPES.ADD_USER;
         const emailData = {
@@ -71,3 +70,17 @@ export const createNotificationsForNewUserAdding = async (data: any) => {
         console.error(e.message);
     }
 };
+
+export const createNotificationsForBulkInvoicesPayments = async (data:any) => {
+    try {
+        const emails = [data.supplierData.email, ...data.additionalEmails];
+        const type = EMAIL_TYPES.BULK_INVOICE_PAYMENTS;
+        const emailPromises = emails.map(async (e: any) => {
+            return await sendEmail(type, e, data);
+        });
+
+        await Promise.all(emailPromises);
+    } catch (e:any) {
+        console.error(e.message);
+    }
+}

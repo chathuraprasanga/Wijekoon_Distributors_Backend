@@ -1,8 +1,9 @@
-import { rolePreview } from "./preview";
+import { rolePreview, amountPreview } from "./preview";
 
 export const EMAIL_TYPES = {
     ADD_USER: "ADD_USER",
     FORGOT_PASSWORD: "FORGOT_PASSWORD",
+    BULK_INVOICE_PAYMENTS: "BULK_INVOICE_PAYMENTS",
 };
 
 // Subject line generator
@@ -13,6 +14,12 @@ export const createSubjectToEmail = async (type: string, data: any) => {
         }
         if (type === EMAIL_TYPES.FORGOT_PASSWORD) {
             return `Reset Your Password - Wijekoon Distributors`;
+        }
+        if (type === EMAIL_TYPES.BULK_INVOICE_PAYMENTS) {
+            const invoiceNumbers = data.updatedInvoices.map(
+                (i: any) => i.invoiceNumber
+            );
+            return `Wijekoon Distributors Make Payments for ${invoiceNumbers.join(", ")}`;
         }
         console.error("Email type is not matching");
         return;
@@ -63,6 +70,138 @@ export const createEmailBody = async (type: string, data: any) => {
                     <p><strong>The Wijekoon Distributors Team</strong></p>
                 </td>
             </tr>
+            ${getFooter()}
+            `;
+        }
+        if (type === EMAIL_TYPES.BULK_INVOICE_PAYMENTS) {
+            console.log("DATA", data);
+            const invoices = data.updatedInvoices;
+            const invoiceAmount = invoices.reduce(
+                (total: number, i: any) => total + i.amount,
+                0
+            );
+            const customerCheques = data.updatedCustomerCheques;
+            const customerChequeAmount = customerCheques.reduce(
+                (total: number, i: any) => total + i.amount,
+                0
+            );
+            const createdCheques = data.createdCheques;
+            const createdChequeAmount = createdCheques.reduce(
+                (total: number, i: any) => total + i.amount,
+                0
+            );
+            const addedCash = data.addedCash;
+            const addedCashAmount = addedCash.reduce(
+                (total: number, i: any) => total + i.note * i.count,
+                0
+            );
+
+            return `
+            ${getHeader("Invoice Payments")}
+            <tr>
+        <td class="body-content">
+          <p>Dear ${data?.supplierData?.name},</p>
+          <p>We are pleased to inform you that the following payments have been successfully processed for your invoices</p>
+          <br>
+          <!-- Invoice Table -->
+            <table border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; width: 100%; max-width: 600px; margin: 20px auto; background-color: #ffffff;">
+    <thead>
+        <tr style="background-color: #4CAF50; color: white;">
+            <th width="35%" style="padding: 10px; text-align: left; font-size: 14px;">Item</th>
+            <th width="30%" style="padding: 10px; text-align: left; font-size: 14px;">Amount</th>
+            <th width="35%" style="padding: 10px; text-align: left; font-size: 14px;">Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="3" style="text-align: center; padding: 10px; font-size: 16px; font-weight: bold; background-color: #f2f2f2;">Invoices</td>
+        </tr>
+        ${invoices
+                .map((i: any, idx: any) => {
+                    return `
+                <tr key="${idx}">
+                    <td style="padding: 10px; border-top: 1px solid #ddd; font-size: 14px;">${i.invoiceNumber}</td>
+                    <td style="padding: 10px; border-top: 1px solid #ddd; font-size: 14px; text-align: right;">${amountPreview(i.amount)}</td>
+                    <td style="padding: 10px; border-top: 1px solid #ddd; font-size: 14px;"></td>
+                </tr>`;
+                })
+                .join("")}
+        <tr>
+            <td colspan="2" style="padding: 10px; font-weight: bold; font-size: 14px;">Total Invoices Amount</td>
+            <td style="padding: 10px; font-size: 14px; font-weight: bold; text-align: right;">${amountPreview(invoiceAmount)}</td>
+        </tr>
+
+        <tr>
+            <td colspan="3" style="text-align: center; padding: 10px; font-size: 16px; font-weight: bold; background-color: #f2f2f2;">Customers Cheques</td>
+        </tr>
+        ${customerCheques
+                .map((c: any, idx: any) => {
+                    return `
+                <tr key="${idx}">
+                    <td style="padding: 10px; border-top: 1px solid #ddd; font-size: 14px;">${c.number}</td>
+                    <td style="padding: 10px; border-top: 1px solid #ddd; font-size: 14px; text-align: right;">${amountPreview(c.amount)}</td>
+                    <td style="padding: 10px; border-top: 1px solid #ddd; font-size: 14px;"></td>
+                </tr>`;
+                })
+                .join("")}
+        <tr>
+            <td colspan="2" style="padding: 10px; font-weight: bold; font-size: 14px;">Total Customer Cheques</td>
+            <td style="padding: 10px; font-size: 14px; font-weight: bold; text-align: right;">${amountPreview(customerChequeAmount)}</td>
+        </tr>
+
+        <tr>
+            <td colspan="3" style="text-align: center; padding: 10px; font-size: 16px; font-weight: bold; background-color: #f2f2f2;">Company Cheques</td>
+        </tr>
+        ${createdCheques
+                .map((c: any, idx: any) => {
+                    return `
+                <tr key="${idx}">
+                    <td style="padding: 10px; border-top: 1px solid #ddd; font-size: 14px;">${c.number}</td>
+                    <td style="padding: 10px; border-top: 1px solid #ddd; font-size: 14px; text-align: right;">${amountPreview(c.amount)}</td>
+                    <td style="padding: 10px; border-top: 1px solid #ddd; font-size: 14px;"></td>
+                </tr>`;
+                })
+                .join("")}
+        <tr>
+            <td colspan="2" style="padding: 10px; font-weight: bold; font-size: 14px;">Total Company Cheques</td>
+            <td style="padding: 10px; font-size: 14px; font-weight: bold; text-align: right;">${amountPreview(createdChequeAmount)}</td>
+        </tr>
+
+        <tr>
+            <td colspan="3" style="text-align: center; padding: 10px; font-size: 16px; font-weight: bold; background-color: #f2f2f2;">Cash</td>
+        </tr>
+        ${addedCash
+                .map((n: any, idx: any) => {
+                    return `
+                <tr key="${idx}">
+                    <td style="padding: 10px; border-top: 1px solid #ddd; font-size: 14px;">${amountPreview(n.note)} * ${n.count}</td>
+                    <td style="padding: 10px; border-top: 1px solid #ddd; font-size: 14px; text-align: right;">${amountPreview(n.note * n.count)}</td>
+                    <td style="padding: 10px; border-top: 1px solid #ddd; font-size: 14px;"></td>
+                </tr>`;
+                })
+                .join("")}
+        <tr>
+            <td colspan="2" style="padding: 10px; font-weight: bold; font-size: 14px;">Total Cash</td>
+            <td style="padding: 10px; font-size: 14px; font-weight: bold; text-align: right;">${amountPreview(addedCashAmount)}</td>
+        </tr>
+
+        <tr>
+            <td style="padding: 10px; font-weight: bold; font-size: 14px;">Balance</td>
+            <td style="padding: 10px;"></td>
+            <td style="padding: 10px; font-weight: bold; font-size: 14px; text-align: right;">${amountPreview(invoiceAmount - (customerChequeAmount + createdChequeAmount + addedCashAmount))}</td>
+        </tr>
+    </tbody>
+</table>
+
+          <br />
+          <p><strong>Notes:</strong> ${data.notes}</p>
+
+          <br />
+          <p>If you have any questions, feel free to reach out to our support team at <a href="mailto:support@xcorpion.xyz">support@xcorpion.xyz</a>.</p>
+          <p>Best regards,</p>
+          <p><strong>The Wijekoon Enterprises Team</strong></p>
+        </td>
+      </tr>
             ${getFooter()}
             `;
         }
