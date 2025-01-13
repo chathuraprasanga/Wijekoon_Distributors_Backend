@@ -9,6 +9,13 @@ import {
 } from "../repositories/invoice.repository";
 import errors from "../constants/errors";
 import mongoose from "mongoose";
+import { updateChequeRepo } from "../repositories/cheque.repository";
+import { createChequePaymentRepo } from "../repositories/chequePayment.repository";
+import { findSupplierRepo } from "../repositories/supplier.repository";
+import {
+    createBulkInvoicePaymentRepo,
+    findBulkInvoicePaymentRepo,
+} from "../repositories/bulkInvoicePayment.repository";
 
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -30,7 +37,7 @@ export const createInvoiceService = async (data: any) => {
 export const findAllInvoiceService = async (data: any) => {
     try {
         const { filters } = data; // Destructure 'filter' from 'data'
-        const { status, supplier } = filters || {}; // Destructure 'status' and 'supplier', default to an empty object if 'filter' is undefined
+        const { status, supplier, invoiceStatus } = filters || {}; // Destructure 'status' and 'supplier', default to an empty object if 'filter' is undefined
         console.log(supplier);
 
         const pipeline: any[] = [
@@ -58,6 +65,10 @@ export const findAllInvoiceService = async (data: any) => {
 
         if (supplier) {
             match["supplier._id"] = new ObjectId(supplier);
+        }
+
+        if (invoiceStatus) {
+            match["invoiceStatus"] = invoiceStatus;
         }
 
         if (Object.keys(match).length > 0) {
@@ -208,5 +219,108 @@ export const getUnpaidInvoicesBySupplier = async () => {
     } catch (e: any) {
         console.error(e.message);
         throw e;
+    }
+};
+
+export const createBulkInvoicePaymentService = async (data: any) => {
+    try {
+        console.log("DATA", data);
+        const paymentId = await generatePaymentId();
+
+        const supplier: any | null = await findSupplierRepo({
+            _id: data.supplier,
+        });
+
+        const invoices = await Promise.all(
+            data.invoices.map(async (i: any) => {
+                const invoice = await updateInvoiceRepo(
+                    { _id: i },
+                    { invoiceStatus: "PAID" }
+                );
+                if (!invoice) {
+                    throw new Error(
+                        `Invoice with ID ${i} not found or update failed`
+                    );
+                }
+                return invoice;
+            })
+        );
+
+        const cheques = await Promise.all(
+            data.customerCheques.map(async (c: any) => {
+                const cheque = await updateChequeRepo(
+                    { _id: c },
+                    { chequeStatus: "SEND TO SUPPLIER" }
+                );
+                if (!cheque) {
+                    throw new Error(
+                        `Cheque with ID ${c} not found or update failed`
+                    );
+                }
+                return cheque;
+            })
+        );
+
+        const chequePayments = await Promise.all(
+            data.createdCheques.map(async (cc: any) => {
+                const chequePayment = await createChequePaymentRepo({
+                    payFor: supplier.name,
+                    number: cc.chequeNumber,
+                    amount: cc.amount,
+                    date: cc.date,
+                    bankAccount: cc.bankAccount,
+                    paymentStatus: "PENDING",
+                    status: true,
+                });
+                if (!chequePayment) {
+                    throw new Error("Failed to create cheque payment");
+                }
+                return chequePayment;
+            })
+        );
+
+        const createdChequesIds = chequePayments.map((i) => i._id);
+
+        const payload: any = {
+            paymentId: paymentId,
+            supplier: data.supplier,
+            invoices: data.invoices,
+            customerCheques: data.customerCheques,
+            createdCheques: createdChequesIds,
+            addedCash: data.addedCash,
+            notes: data.notes,
+            additionalEmails: data.additionalEmails,
+        };
+
+        const response = await createBulkInvoicePaymentRepo(payload);
+
+        return {
+            ...response,
+            updatedInvoices: invoices,
+            updatedCustomerCheques: cheques,
+            createdCheques: chequePayments,
+            supplierData: supplier,
+        };
+    } catch (e: any) {
+        console.error(e.message);
+        throw new Error(e);
+    }
+};
+
+const generatePaymentId = async () => {
+    const lastBulkInvoicePayment = await findBulkInvoicePaymentRepo({
+        sort: { createdAt: -1 },
+        limit: 1,
+    });
+    const paymentId = lastBulkInvoicePayment?.paymentId;
+    if (paymentId) {
+        const paymentIdNumber = parseInt(paymentId.split("-")[2]);
+        if (paymentIdNumber >= 9999) {
+            return `W-PAY-${paymentIdNumber + 1}`;
+        }
+        const newPaymentIdNumber = paymentIdNumber + 1;
+        return `W-PAY-${String(newPaymentIdNumber).padStart(4, "0")}`;
+    } else {
+        return "W-PAY-0001";
     }
 };

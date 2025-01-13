@@ -14,6 +14,9 @@ const ERROR_MESSAGES = {
     INVALID_SUPPLIER: "Invalid supplier. Please check again.",
     INVALID_BANK_ACCOUNT: "Invalid bank account. Please check again.",
     EMAIL_IS_ALREADY_AVAILABLE: "Email is already available. Please check email again.",
+    INVALID_INVOICE: "Invalid Invoice. Please check again",
+    INVALID_CHEQUE_PAYMENT: "Invalid Cheque payment. Please check again",
+    INVALID_CHEQUE: "Invalid Cheque, Please check again"
 };
 
 export default ERROR_MESSAGES;

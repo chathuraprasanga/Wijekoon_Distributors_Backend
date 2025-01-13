@@ -1,6 +1,7 @@
 import { Router } from "express";
 import authMiddleware from "../middlewares/auth.middleware";
 import {
+    createBulkInvoicePaymentController,
     createInvoiceController,
     getAllInvoiceController,
     getInvoiceController, getPagedInvoicesController,
@@ -17,5 +18,6 @@ invoiceRoute.post("/paged-invoices", authMiddleware, getPagedInvoicesController)
 invoiceRoute.get("/invoice/:id", authMiddleware, getInvoiceController);
 invoiceRoute.put("/invoice/:id", authMiddleware, updateInvoiceController);
 invoiceRoute.put("/change-status/:id", authMiddleware, invoiceStatusChangeController);
+invoiceRoute.post("/bulk-invoice-payment", authMiddleware, createBulkInvoicePaymentController);
 
 export default invoiceRoute;
