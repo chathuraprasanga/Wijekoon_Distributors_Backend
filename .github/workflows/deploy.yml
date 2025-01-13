@@ -106,6 +106,10 @@ jobs:
                 fi
               fi
             done
+            # Keep the SSH session alive to avoid disconnection
+            echo "Logging out other users complete, keeping the session active..."
+            sleep 60  # This will keep the session alive for 60 seconds
           EOF
+      
       
       
