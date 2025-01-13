@@ -96,9 +96,16 @@ jobs:
             for pid in $current_pid; do
               # Check if it's not the current SSH session PID
               if [ "$pid" != "$$" ]; then
-                echo "Killing PID: $pid"
-                sudo kill -9 $pid || echo "Failed to kill PID: $pid"
+                echo "Attempting to kill PID: $pid"
+
+                # Check if the process exists before attempting to kill
+                if ps -p $pid > /dev/null; then
+                  sudo kill -9 $pid && echo "Successfully killed PID: $pid" || echo "Failed to kill PID: $pid"
+                else
+                  echo "PID $pid does not exist, skipping..."
+                fi
               fi
             done
           EOF
+      
       
