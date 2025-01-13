@@ -7,7 +7,12 @@ export const createBulkInvoicePaymentRepo = async (data: any) => {
 };
 
 export const findBulkInvoicePaymentRepo = (filters: any) => {
-    return BulkInvoicePayment.findOne(filters).exec();
+    return BulkInvoicePayment.findOne(filters)
+        .populate("supplier")
+        .populate("invoices")
+        .populate("customerCheques")
+        .populate("createdCheques")
+        .exec();
 };
 
 export const findBulkInvoicesPaymentRepo = (filters: any) => {
@@ -20,4 +25,21 @@ export const updateBulkInvoicePaymentRepo = (filters: any, data: any) => {
 
 export const aggregateBulkInvoicePaymentRepo = (pipeline: any) => {
     return BulkInvoicePayment.aggregate(pipeline).exec();
+};
+
+export const getPagedBulkInvoicePaymentsRepo = (
+    matchFilter: any,
+    pageSize: any,
+    pageIndex: any,
+    sort: any
+) => {
+    return BulkInvoicePayment.find(matchFilter)
+        .populate("supplier")
+        .populate("customerCheques")
+        .populate("createdCheques")
+        .populate("invoices")
+        .sort({ createdAt: sort })
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+        .exec();
 };

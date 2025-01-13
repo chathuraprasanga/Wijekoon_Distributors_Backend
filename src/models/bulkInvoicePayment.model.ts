@@ -24,7 +24,7 @@ const BulkInvoicePaymentSchema: Schema = new Schema<IBulkInvoicePayment>(
         },
         supplier: {
             type: Schema.Types.ObjectId,
-            ref: "supplier",
+            ref: "Supplier",
             required: [true, "Supplier is required."],
             validate: {
                 validator: async function (value: ObjectId) {
@@ -36,7 +36,7 @@ const BulkInvoicePaymentSchema: Schema = new Schema<IBulkInvoicePayment>(
         invoices: [
             {
                 type: Schema.Types.ObjectId,
-                ref: "invoice",
+                ref: "Invoice",
                 required: [true, "Invoice is required."],
                 validate: {
                     validator: async function (value: ObjectId) {
@@ -49,7 +49,7 @@ const BulkInvoicePaymentSchema: Schema = new Schema<IBulkInvoicePayment>(
         customerCheques: [
             {
                 type: Schema.Types.ObjectId,
-                ref: "cheque",
+                ref: "Cheque",
                 validate: {
                     validator: async function (value: ObjectId) {
                         return mongoose.models.Cheque.exists({ _id: value });
@@ -61,7 +61,7 @@ const BulkInvoicePaymentSchema: Schema = new Schema<IBulkInvoicePayment>(
         createdCheques: [
             {
                 type: Schema.Types.ObjectId,
-                ref: "chequePayment",
+                ref: "ChequePayment",
                 required: true,
                 validate: {
                     validator: async function (value: ObjectId) {
