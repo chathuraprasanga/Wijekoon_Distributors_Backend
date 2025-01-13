@@ -89,16 +89,19 @@ jobs:
       - name: Logout all users except for current session
         run: |
           ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }} << 'EOF'
-            # Get the current user's PID
+            # Get the current user's PID and SSH session PID
             current_pid=$(ps -u $(whoami) -o pid= | grep -v $$)
+
+            # Log the PIDs we are attempting to kill
+            echo "Attempting to kill the following PIDs: $current_pid"
 
             # Loop through the PIDs and kill them if they aren't the current session
             for pid in $current_pid; do
-              # Check if it's not the current SSH session PID
+              # Skip killing the SSH session's own PID (this ensures the current SSH session stays alive)
               if [ "$pid" != "$$" ]; then
                 echo "Attempting to kill PID: $pid"
 
-                # Check if the process exists before attempting to kill
+                # Check if the process exists before attempting to kill it
                 if ps -p $pid > /dev/null; then
                   sudo kill -9 $pid && echo "Successfully killed PID: $pid" || echo "Failed to kill PID: $pid"
                 else
@@ -106,10 +109,8 @@ jobs:
                 fi
               fi
             done
-            # Keep the SSH session alive to avoid disconnection
-            echo "Logging out other users complete, keeping the session active..."
-            sleep 60  # This will keep the session alive for 60 seconds
+
+            # To ensure the SSH session doesn't close immediately, add a sleep time
+            echo "Logging out other users complete, keeping the session active for a while..."
+            sleep 60  # Adjust the sleep duration if necessary
           EOF
-      
-      
-      
