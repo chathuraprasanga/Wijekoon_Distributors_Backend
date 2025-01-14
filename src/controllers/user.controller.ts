@@ -1,6 +1,6 @@
 import { IRequest, IResponse } from "../interfaces/dto";
 import {
-    changePasswordService,
+    changePasswordService, changeUserStatusService,
     confirmLoginService,
     createUserService,
     findAllUsersService,
@@ -127,3 +127,20 @@ export const getAllUsersController = async (
         );
     }
 };
+
+export const userStatusChangeController = async(req:IRequest, res: IResponse):Promise<any> => {
+    try{
+        const {id} = req.params;
+        const body = req.body;
+        const response = await changeUserStatusService(id, body);
+        return sendResponse(res, 200, "User status changed successfully", response);
+    } catch (error:any){
+        return sendResponse(
+            res,
+            500,
+            "Change user status failed",
+            null,
+            error.message
+        );
+    }
+}

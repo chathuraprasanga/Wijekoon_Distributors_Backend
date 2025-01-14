@@ -43,3 +43,7 @@ export const getPagedBulkInvoicePaymentsRepo = (
         .skip(pageSize * (pageIndex - 1))
         .exec();
 };
+
+export const countBulkInvoicePayments = (filters: any) => {
+    return BulkInvoicePayment.countDocuments(filters).exec();
+};

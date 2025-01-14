@@ -36,10 +36,13 @@ export const createUserService = async (data: any) => {
 };
 
 const generateRandomPassword = (length = 12) => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$!";
-    return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    const chars =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$!";
+    return Array.from(
+        { length },
+        () => chars[Math.floor(Math.random() * chars.length)]
+    ).join("");
 };
-
 
 const checkExistingUserService = (email: string, phone: string) => {
     const pipeline = [
@@ -174,6 +177,15 @@ export const changePasswordService = async (data: any, user: any) => {
 export const findAllUsersService = async (data: any) => {
     try {
         return await findUsersRepo(data);
+    } catch (e: any) {
+        console.error(e.message);
+        throw e;
+    }
+};
+
+export const changeUserStatusService = async (id: any, data: any) => {
+    try {
+        return await updateUserRepo({ _id: id }, { data });
     } catch (e: any) {
         console.error(e.message);
         throw e;
