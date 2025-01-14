@@ -16,7 +16,8 @@ const ERROR_MESSAGES = {
     EMAIL_IS_ALREADY_AVAILABLE: "Email is already available. Please check email again.",
     INVALID_INVOICE: "Invalid Invoice. Please check again",
     INVALID_CHEQUE_PAYMENT: "Invalid Cheque payment. Please check again",
-    INVALID_CHEQUE: "Invalid Cheque, Please check again"
+    INVALID_CHEQUE: "Invalid Cheque, Please check again",
+    USER_DEACTIVATED: "User is deactivated. Please contact the authorities"
 };
 
 export default ERROR_MESSAGES;
