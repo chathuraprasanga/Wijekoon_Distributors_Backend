@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    name: Wijekoon Distributors Backend
+    name: Wijekoon Distributors Backend Deployment
     runs-on: ubuntu-latest
 
     steps:
@@ -26,23 +26,30 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }} "echo 'SSH connection successful!'"
 
-      # Kill all user sessions except the current SSH session
-      - name: Kill all user sessions except current one
+      # Kill unnecessary user sessions, keeping the current SSH session
+      - name: Kill unnecessary user sessions
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }} << 'EOF'
-            # Get the current user
+            # Get the current user's name
             current_user=$(whoami)
 
-            # Get the current SSH session PID and exclude it from the kill list
+            # Get the current SSH session's PID
             current_pid=$$
 
-            # Find all processes for the user, excluding the current SSH session
+            # Get a list of PIDs associated with the current user
             user_pids=$(ps -u $current_user -o pid=)
 
+            # Iterate over all the PIDs and kill the unnecessary ones
             for pid in $user_pids; do
+              # Exclude the current SSH session from being killed
               if [ "$pid" != "$current_pid" ]; then
-                echo "Killing PID: $pid"
-                sudo kill -9 $pid || echo "Failed to kill PID: $pid"
+                # Exclude necessary sessions like sshd, screen, tmux (adjust based on your needs)
+                if ! ps -p $pid -o comm= | grep -E 'sshd|screen|tmux' > /dev/null; then
+                  echo "Killing PID: $pid"
+                  sudo kill -9 $pid || echo "Failed to kill PID: $pid"
+                else
+                  echo "Skipping PID: $pid (Necessary session)"
+                fi
               fi
             done
           EOF
