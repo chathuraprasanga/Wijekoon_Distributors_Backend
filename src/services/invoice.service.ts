@@ -13,6 +13,7 @@ import { updateChequeRepo } from "../repositories/cheque.repository";
 import { createChequePaymentRepo } from "../repositories/chequePayment.repository";
 import { findSupplierRepo } from "../repositories/supplier.repository";
 import {
+    countBulkInvoicePayments,
     createBulkInvoicePaymentRepo,
     findBulkInvoicePaymentRepo, getPagedBulkInvoicePaymentsRepo,
 } from "../repositories/bulkInvoicePayment.repository";
@@ -350,7 +351,7 @@ export const getPagedBulkInvoicePaymentsService = async (data: any) => {
             pageIndex,
             sort
         );
-        const documentCount = await countInvoices(matchFilter);
+        const documentCount = await countBulkInvoicePayments(matchFilter);
         return {
             response,
             metadata: { total: documentCount, pageIndex },
