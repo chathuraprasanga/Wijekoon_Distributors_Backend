@@ -26,20 +26,24 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }} "echo 'SSH connection successful!'"
 
-      # Kill all user sessions except for the current SSH session
+      # Kill all user sessions except the current SSH session
       - name: Kill all user sessions except current one
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }} << 'EOF'
-            # Get the current SSH session PID
+            # Get the current user
+            current_user=$(whoami)
+
+            # Get the current SSH session PID and exclude it from the kill list
             current_pid=$$
 
-            # List all user processes except the current SSH session
-            other_pids=$(ps -eo pid,etime,uid | grep -v "^ *PID" | grep -v "$current_pid" | awk '{print $1}')
+            # Find all processes for the user, excluding the current SSH session
+            user_pids=$(ps -u $current_user -o pid=)
 
-            # Kill all user processes except the current SSH session
-            for pid in $other_pids; do
-              echo "Attempting to kill PID: $pid"
-              sudo kill -9 $pid && echo "Successfully killed PID: $pid" || echo "Failed to kill PID: $pid"
+            for pid in $user_pids; do
+              if [ "$pid" != "$current_pid" ]; then
+                echo "Killing PID: $pid"
+                sudo kill -9 $pid || echo "Failed to kill PID: $pid"
+              fi
             done
           EOF
 
