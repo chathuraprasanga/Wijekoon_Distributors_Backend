@@ -9,6 +9,7 @@ import { v4 as uuid } from "uuid";
 import ERROR_MESSAGES from "../constants/errors";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import errors from "../constants/errors";
 
 const ACCESS_TOKEN_SECRET: any = process.env.access_secret;
 const REFRESH_TOKEN_SECRET: any = process.env.refresh_secret;
@@ -87,6 +88,11 @@ export const userLoginService = async (data: any) => {
         if (!isPasswordMatch) {
             throw new Error("Password is invalid");
         }
+
+        if (!user.status){
+            throw new Error(errors.USER_DEACTIVATED)
+        }
+
         const payload: any = {
             accessToken: await generateAccessToken(user),
             refreshToken: await generateRefreshToken(user),
@@ -185,7 +191,7 @@ export const findAllUsersService = async (data: any) => {
 
 export const changeUserStatusService = async (id: any, data: any) => {
     try {
-        return await updateUserRepo({ _id: id }, { data });
+        return await updateUserRepo({ _id: id }, data );
     } catch (e: any) {
         console.error(e.message);
         throw e;
