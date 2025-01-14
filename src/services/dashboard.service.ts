@@ -15,8 +15,8 @@ import { findAllChequePaymentsRepo } from "../repositories/chequePayment.reposit
 
 export const findDashboardDetailsService = async (data: any) => {
     try {
-        const { chequesCount, totalAmount } = await getChequesToDeposit();
-        const { chequePaymentsCount, totalPaymentAmount } =
+        const { chequesCount, totalAmount, todayChequesCount, todayChequesTotalAmount } = await getChequesToDeposit();
+        const { chequePaymentsCount, totalPaymentAmount, todayChequePaymentsCount, todayTotalPaymentAmount } =
             await getChequesComesToTransfer();
         return {
             user: await findUserRepo({ _id: data.userId }),
@@ -29,10 +29,14 @@ export const findDashboardDetailsService = async (data: any) => {
             chequesToDeposit: {
                 count: chequesCount,
                 amount: totalAmount,
+                todayCount: todayChequesCount,
+                todayAmount: todayChequesTotalAmount
             },
             chequesComesToTransfer: {
                 count: chequePaymentsCount,
                 amount: totalPaymentAmount,
+                todayCount: todayChequePaymentsCount,
+                todayAmount: todayTotalPaymentAmount
             },
             invoicesToBePaid: {
                 toBePaid: await calculateUnpaidInvoiceAmount(),
@@ -58,7 +62,11 @@ const getChequesToDeposit = async () => {
         const today = todayUtc.toISOString();
 
         const cheques = await findChequesRepo({
-            depositDate: { $lte: today }, // Less than or equal to today
+            depositDate: { $lte: today },
+            chequeStatus: "PENDING",
+        });
+        const todayCheques = await findChequesRepo({
+            depositDate: today ,
             chequeStatus: "PENDING",
         });
 
@@ -68,7 +76,13 @@ const getChequesToDeposit = async () => {
             0
         );
 
-        return { chequesCount, totalAmount };
+        const todayChequesCount = todayCheques.length;
+        const todayChequesTotalAmount = todayCheques.reduce(
+            (sum, cheque) => sum + cheque.amount,
+            0
+        );
+
+        return { chequesCount, totalAmount, todayChequesCount, todayChequesTotalAmount };
     } catch (e: any) {
         console.error(e.message);
         throw e;
@@ -86,13 +100,27 @@ const getChequesComesToTransfer = async () => {
             )
         );
         const today = todayUtc.toISOString();
-        const chequePayments = await findAllChequePaymentsRepo({ date: today });
+        const chequePayments = await findAllChequePaymentsRepo({
+            date: { $lte: today },
+            paymentStatus: "PENDING",
+        });
+        const todayChequePayments = await findAllChequePaymentsRepo({
+            date: today,
+            paymentStatus: "PENDING",
+        });
+
         const chequePaymentsCount = chequePayments.length;
         const totalPaymentAmount = chequePayments.reduce(
             (sum, cheque) => sum + cheque.amount,
             0
         );
-        return { chequePaymentsCount, totalPaymentAmount };
+        const todayChequePaymentsCount = todayChequePayments.length;
+        const todayTotalPaymentAmount = todayChequePayments.reduce(
+            (sum, cheque) => sum + cheque.amount,
+            0
+        );
+
+        return { chequePaymentsCount, totalPaymentAmount, todayChequePaymentsCount, todayTotalPaymentAmount };
     } catch (e: any) {
         console.error(e.message);
         throw e;
