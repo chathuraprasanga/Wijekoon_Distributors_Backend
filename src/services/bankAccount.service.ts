@@ -5,7 +5,6 @@ import {
     getPagedBankAccountRepo,
     updateBankAccountRepo,
 } from "../repositories/bankAccount.repository";
-import { updateUserRepo } from "../repositories/user.repository";
 
 export const createBankAccountService = async (data: any) => {
     try {
