@@ -38,7 +38,7 @@ export const findAllChequePaymentsService = async (data: any) => {
 export const getPagedChequePaymentsService = async (data: any) => {
     try {
         const filters = data.filters;
-        const { searchQuery, pageSize, pageIndex, sort, status, date } = filters;
+        const { searchQuery, pageSize, pageIndex, sort, status, date, fromDate, toDate } = filters;
         const matchFilter: any = { $and: [] };
 
         if (searchQuery) {
@@ -51,6 +51,14 @@ export const getPagedChequePaymentsService = async (data: any) => {
 
         if (date) {
             matchFilter.$and.push({ date: date });
+        }
+
+        if(fromDate) {
+            matchFilter.$and.push({ date: {$gte: fromDate }})
+        }
+
+        if(toDate) {
+            matchFilter.$and.push({ date: {$lte: toDate }})
         }
 
         const response = await getPagedChequePaymentsRepo(

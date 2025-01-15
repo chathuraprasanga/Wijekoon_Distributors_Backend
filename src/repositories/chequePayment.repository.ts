@@ -13,7 +13,7 @@ export const findChequePaymentRepo = (filters: any) => {
 };
 
 export const updateChequePaymentRepo = (filters: any, data: any) => {
-    return ChequePayment.findOneAndUpdate(filters, data).exec();
+    return ChequePayment.findOneAndUpdate(filters, data, {new: true}).exec();
 };
 
 export const aggregateChequePaymentRepo = (pipeline: any) => {

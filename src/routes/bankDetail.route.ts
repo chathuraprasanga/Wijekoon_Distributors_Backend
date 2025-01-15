@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+    bankDetailStatusChangeController,
     createBankAccountController,
     getAllBankAccountsController,
 } from "../controllers/bankAccount.controller";
@@ -16,5 +17,6 @@ bankDetailRoute.post(
     authMiddleware,
     createBankAccountController
 );
+bankDetailRoute.put("/change-status/:id", authMiddleware, bankDetailStatusChangeController)
 
 export default bankDetailRoute;

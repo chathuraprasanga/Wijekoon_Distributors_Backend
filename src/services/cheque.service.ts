@@ -112,8 +112,16 @@ export const getChequeByIdService = async (id: string) => {
 export const getPagedChequesService = async (data: any) => {
     try {
         const filters = data.filters;
-        const { customer, pageSize, pageIndex, sort, status, depositDate } =
-            filters;
+        const {
+            customer,
+            pageSize,
+            pageIndex,
+            sort,
+            status,
+            depositDate,
+            fromDate,
+            toDate,
+        } = filters;
         const matchFilter: any = { $and: [] };
 
         if (customer) {
@@ -126,6 +134,14 @@ export const getPagedChequesService = async (data: any) => {
 
         if (depositDate) {
             matchFilter.$and.push({ depositDate: depositDate });
+        }
+
+        if(fromDate) {
+            matchFilter.$and.push({ depositDate: {$gte: fromDate }})
+        }
+
+        if(toDate) {
+            matchFilter.$and.push({ depositDate: {$lte: toDate }})
         }
 
         const response = await getPagedChequesRepo(

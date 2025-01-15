@@ -17,17 +17,19 @@ export const aggregateBankAccountRepo = (pipeline: any) => {
 };
 
 export const updateBankAccountRepo = (filters: any, data: any) => {
-    return BankAccount.findOneAndUpdate(filters, data).exec();
+    return BankAccount.findOneAndUpdate(filters, data, {
+        new: true,
+    }).exec();
 };
 
 export const getPagedBankAccountRepo = (
     matchFilter: any,
     pageSize: any,
     pageIndex: any,
-    sort:any
+    sort: any
 ) => {
     return BankAccount.find(matchFilter)
-        .sort({createdAt: sort})
+        .sort({ createdAt: sort })
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
         .exec();
@@ -36,6 +38,3 @@ export const getPagedBankAccountRepo = (
 export const countBankAccountRepo = (filters: any) => {
     return BankAccount.countDocuments(filters).exec();
 };
-
-
-
