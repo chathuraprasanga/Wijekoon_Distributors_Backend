@@ -101,7 +101,7 @@ const getChequesComesToTransfer = async () => {
         );
         const today = todayUtc.toISOString();
         const chequePayments = await findAllChequePaymentsRepo({
-            date: { $lte: today },
+            date: { $gte: today },
             paymentStatus: "PENDING",
         });
         const todayChequePayments = await findAllChequePaymentsRepo({
