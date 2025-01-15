@@ -20,8 +20,9 @@ export const findBulkInvoicesPaymentRepo = (filters: any) => {
 };
 
 export const updateBulkInvoicePaymentRepo = (filters: any, data: any) => {
-    return BulkInvoicePayment.findOneAndUpdate(filters, data).exec();
+    return BulkInvoicePayment.findOneAndUpdate(filters, data, {new: true}).exec();
 };
+
 
 export const aggregateBulkInvoicePaymentRepo = (pipeline: any) => {
     return BulkInvoicePayment.aggregate(pipeline).exec();

@@ -5,6 +5,7 @@ import {
     getPagedBankAccountRepo,
     updateBankAccountRepo,
 } from "../repositories/bankAccount.repository";
+import { updateUserRepo } from "../repositories/user.repository";
 
 export const createBankAccountService = async (data: any) => {
     try {
@@ -17,8 +18,8 @@ export const createBankAccountService = async (data: any) => {
 
 export const findAllBankAccountService = async (data: any) => {
     try {
-        console.log("data", data);
-        return await findAllBankAccountRepo({});
+        const filters = data.filters;
+        return await findAllBankAccountRepo(filters);
     } catch (e: any) {
         console.error(e.message);
         throw e;
@@ -39,6 +40,16 @@ export const updateBankAccountService = async (id: string, data: any) => {
         delete data._id;
 
         return await updateBankAccountRepo({ _id: id }, data);
+    } catch (e: any) {
+        console.error(e.message);
+        throw e;
+    }
+};
+
+export const changeBankDetailStatusService = async (id: any, data: any) => {
+    try {
+        console.log("data", data);
+        return await updateBankAccountRepo({ _id: id }, data );
     } catch (e: any) {
         console.error(e.message);
         throw e;

@@ -1,6 +1,7 @@
 import { IRequest, IResponse } from "../interfaces/dto";
 import { sendResponse } from "../helpers/sendResponse";
 import {
+    changeBankDetailStatusService,
     createBankAccountService,
     findAllBankAccountService,
     findBankAccountService,
@@ -91,6 +92,31 @@ export const updateBankAccountController = async (
             res,
             201,
             "Update bank account successfully",
+            response
+        );
+    } catch (error: any) {
+        return sendResponse(
+            res,
+            500,
+            "Update bank account failed",
+            null,
+            error.message
+        );
+    }
+};
+
+export const bankDetailStatusChangeController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const { id } = req.params;
+        const body = req.body;
+        const response = await changeBankDetailStatusService(id, body);
+        return sendResponse(
+            res,
+            200,
+            "Change bank account status successfully",
             response
         );
     } catch (error: any) {

@@ -126,7 +126,7 @@ export const getBulkInvoicePaymentByIdService = async (id: string) => {
 export const getPagedInvoicesService = async (data: any) => {
     try {
         const filters = data.filters;
-        const { supplier, pageSize, pageIndex, sort, status, invoicedDate } =
+        const { supplier, pageSize, pageIndex, sort, status, invoicedDate, fromDate, toDate } =
             filters;
         const matchFilter: any = { $and: [] };
 
@@ -141,6 +141,14 @@ export const getPagedInvoicesService = async (data: any) => {
         if (invoicedDate) {
             matchFilter.$and.push({ invoiceDate: invoicedDate });
         }
+        if(fromDate) {
+            matchFilter.$and.push({ invoiceDate: {$gte: fromDate }})
+        }
+
+        if(toDate) {
+            matchFilter.$and.push({ invoiceDate: {$lte: toDate }})
+        }
+
 
         const response = await getPagedInvoicesRepo(
             matchFilter,
