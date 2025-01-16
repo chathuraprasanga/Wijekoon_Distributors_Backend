@@ -2,9 +2,12 @@ import {
     countChequePayments,
     createChequePaymentRepo,
     findAllChequePaymentsRepo,
-    findChequePaymentRepo, getPagedChequePaymentsRepo,
+    findChequePaymentRepo,
+    getPagedChequePaymentsRepo,
     updateChequePaymentRepo,
 } from "../repositories/chequePayment.repository";
+import { findCustomersRepo } from "../repositories/customer.repository";
+import { findSuppliersRepo } from "../repositories/supplier.repository";
 
 export const createChequePaymentService = async (data: any) => {
     try {
@@ -38,11 +41,22 @@ export const findAllChequePaymentsService = async (data: any) => {
 export const getPagedChequePaymentsService = async (data: any) => {
     try {
         const filters = data.filters;
-        const { searchQuery, pageSize, pageIndex, sort, status, date, fromDate, toDate } = filters;
+        const {
+            searchQuery,
+            pageSize,
+            pageIndex,
+            sort,
+            status,
+            date,
+            fromDate,
+            toDate,
+        } = filters;
         const matchFilter: any = { $and: [] };
 
         if (searchQuery) {
-            matchFilter.$or = [{ payFor: { $regex: searchQuery, $options: "i" } }];
+            matchFilter.$or = [
+                { payFor: { $regex: searchQuery, $options: "i" } },
+            ];
         }
 
         if (status) {
@@ -53,12 +67,12 @@ export const getPagedChequePaymentsService = async (data: any) => {
             matchFilter.$and.push({ date: date });
         }
 
-        if(fromDate) {
-            matchFilter.$and.push({ date: {$gte: fromDate }})
+        if (fromDate) {
+            matchFilter.$and.push({ date: { $gte: fromDate } });
         }
 
-        if(toDate) {
-            matchFilter.$and.push({ date: {$lte: toDate }})
+        if (toDate) {
+            matchFilter.$and.push({ date: { $lte: toDate } });
         }
 
         const response = await getPagedChequePaymentsRepo(
@@ -78,7 +92,10 @@ export const getPagedChequePaymentsService = async (data: any) => {
     }
 };
 
-export const changeStatusChequePaymentService = async (id: string, data: any) => {
+export const changeStatusChequePaymentService = async (
+    id: string,
+    data: any
+) => {
     try {
         return await updateChequePaymentRepo(
             { _id: id },
@@ -95,6 +112,21 @@ export const getChequePaymentByIdService = async (id: any) => {
         return await findChequePaymentRepo({ _id: id });
     } catch (e: any) {
         console.error(e.message);
+        throw e;
+    }
+};
+
+export const findAllSystemPayeesService = async () => {
+    try {
+        const customers = await findCustomersRepo({});
+        const supplier = await findSuppliersRepo({});
+        const chequePayments = await findAllChequePaymentsRepo({});
+        const customersNames = customers.map((c) => c.name);
+        const suppliersNames = supplier.map((s) => s.name);
+        const payeesNames = chequePayments.map((p) => p.payFor);
+        return [customersNames, suppliersNames, payeesNames].flat();
+    } catch (e: any) {
+        console.log(e.message);
         throw e;
     }
 };
