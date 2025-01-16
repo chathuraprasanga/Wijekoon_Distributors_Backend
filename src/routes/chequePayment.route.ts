@@ -3,7 +3,7 @@ import authMiddleware from "../middlewares/auth.middleware";
 import {
     chequePaymentStatusChangeController,
     createChequePaymentController,
-    getAllChequePaymentsController, getChequePaymentController,
+    getAllChequePaymentsController, getAllSystemPayeesController, getChequePaymentController,
     getPagedChequePaymentsController, updateChequePaymentController,
 } from "../controllers/chequePayment.controller";
 
@@ -15,5 +15,6 @@ chequePaymentRoute.post("/paged-cheque-payments", authMiddleware, getPagedCheque
 chequePaymentRoute.get("/cheque-payment/:id", authMiddleware, getChequePaymentController);
 chequePaymentRoute.put("/cheque-payment/:id", authMiddleware, updateChequePaymentController);
 chequePaymentRoute.put("/change-status/:id", authMiddleware, chequePaymentStatusChangeController);
+chequePaymentRoute.get("/system-payees", authMiddleware, getAllSystemPayeesController);
 
 export default chequePaymentRoute;

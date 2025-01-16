@@ -4,7 +4,7 @@ import errors from "../constants/errors";
 import {
     changeStatusChequePaymentService,
     createChequePaymentService,
-    findAllChequePaymentsService,
+    findAllChequePaymentsService, findAllSystemPayeesService,
     getChequePaymentByIdService,
     getPagedChequePaymentsService,
     updateChequePaymentService,
@@ -156,3 +156,25 @@ export const getPagedChequePaymentsController = async (
         );
     }
 };
+
+export const getAllSystemPayeesController = async (req:IRequest, res:IResponse):Promise<any> => {
+    try {
+        const response = await findAllSystemPayeesService();
+        return sendResponse(
+            res,
+            200,
+            "System payees fetched successfully",
+            response,
+            null
+        );
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            "Internal server error",
+            null,
+            error.message
+        );
+    }
+}
