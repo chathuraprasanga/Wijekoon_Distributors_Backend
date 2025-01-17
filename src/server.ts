@@ -27,7 +27,7 @@ app.use("/api/v1",routes);
 
 // Main route
 app.get("/", (req: Request, res: Response) => {
-    res.send(`${packageInfo.name} server v${packageInfo.version} running`)
+    res.send(`${packageInfo.name} server ${process.env.NODE_ENV} v${packageInfo.version} running`)
 })
 
 // Start the server
