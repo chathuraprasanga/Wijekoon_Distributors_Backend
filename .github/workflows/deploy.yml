@@ -3,11 +3,11 @@ name: Deploy Wijekoon Distributors Backend to Droplet
 on:
   push:
     branches:
-      - main
+      - qa
 
 jobs:
   deploy:
-    name: Wijekoon Distributors Backend Deployment
+    name: Wijekoon Distributors QA Backend Deployment
     runs-on: ubuntu-latest
 
     steps:
@@ -26,24 +26,16 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }} "echo 'SSH connection successful!'"
 
-      # Kill unnecessary user sessions, keeping the current SSH session
+      # Kill unnecessary user sessions
       - name: Kill unnecessary user sessions
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }} << 'EOF'
-            # Get the current user's name
             current_user=$(whoami)
-
-            # Get the current SSH session's PID
             current_pid=$$
-
-            # Get a list of PIDs associated with the current user
             user_pids=$(ps -u $current_user -o pid=)
 
-            # Iterate over all the PIDs and kill the unnecessary ones
             for pid in $user_pids; do
-              # Exclude the current SSH session from being killed
               if [ "$pid" != "$current_pid" ]; then
-                # Exclude necessary sessions like sshd, screen, tmux (adjust based on your needs)
                 if ! ps -p $pid -o comm= | grep -E 'sshd|screen|tmux' > /dev/null; then
                   echo "Killing PID: $pid"
                   sudo kill -9 $pid || echo "Failed to kill PID: $pid"
@@ -54,7 +46,7 @@ jobs:
             done
           EOF
 
-      # Deploy Wijekoon Distributors Backend to Droplet
+      # Deploy backend qa to Droplet
       - name: Deploy Wijekoon Distributors Backend to Droplet
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }} << 'EOF'
@@ -63,34 +55,38 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
             nvm use node
-            cd /var/www/wijekoon-distributors/backend
 
-            # Clean previous build
+            cd /var/www/qa/wd-server-qa
             rm -rf dist
             git reset --hard
-            git pull origin main
+            git pull origin qa
 
-            # Install dependencies
             npm install --force
-
-            # Run linting
             npm run lint
-
-            # Build the project
             npm run build
 
-            # Memory optimization: Set node memory limit to 512MB
             export NODE_OPTIONS="--max_old_space_size=512"
-
-            # Restart the PM2 process if it's already running or start a new one
-            pm2 describe "wd-server" >/dev/null 2>&1 || pm2 start npm --name "wd-server" -- start
-            pm2 restart "wd-server" --update-env
-
-            # Save the PM2 process list and environment
+            pm2 describe "wd-server-qa" >/dev/null 2>&1 || pm2 start npm --name "wd-server-qa" -- start
+            pm2 restart "wd-server-qa" --update-env
             pm2 save
 
-            # Clean up unused npm and node_modules cache to free up memory
             npm cache clean --force
+          EOF
+
+      # Restart backend prod server
+      - name: Restart Production Server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }} << 'EOF'
+            set -e
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+            nvm use node
+
+            cd /var/www/wijekoon-distributors/backend
+            pm2 describe "wd-server" >/dev/null 2>&1 || pm2 start npm --name "wd-server" -- start
+            pm2 restart "wd-server" --update-env
+            pm2 save
           EOF
 
       # Restart Nginx
