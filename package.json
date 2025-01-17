@@ -8,6 +8,7 @@
     "start": "cross-env NODE_ENV=prod node ./dist/src/server.js",
     "build": "tsc",
     "dev": "cross-env NODE_ENV=dev nodemon ./src/server.ts",
+    "qa": "cross-env NODE_ENV=qa nodemon ./src/server.ts",
     "lint": "eslint"
   },
   "keywords": [],
