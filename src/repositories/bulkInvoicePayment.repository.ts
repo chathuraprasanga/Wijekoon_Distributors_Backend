@@ -15,6 +15,19 @@ export const findBulkInvoicePaymentRepo = (filters: any) => {
         .exec();
 };
 
+
+export const findLastBulkInvoicePaymentRepo = () => {
+    return BulkInvoicePayment.findOne()
+        .sort({ createdAt: -1 }) // Sort by `createdAt` in descending order
+        .populate("supplier")
+        .populate("invoices")
+        .populate("customerCheques")
+        .populate("createdCheques")
+        .exec();
+};
+
+
+
 export const findBulkInvoicesPaymentRepo = (filters: any) => {
     return BulkInvoicePayment.find(filters).exec();
 };
