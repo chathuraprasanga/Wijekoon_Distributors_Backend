@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "cross-env NODE_ENV=qa node ./dist/src/server.js",
     "build": "tsc",
+    "dev": "cross-env NODE_ENV=dev nodemon ./src/server.ts",
     "qa": "cross-env NODE_ENV=qa nodemon ./src/server.ts",
     "lint": "eslint"
   },
