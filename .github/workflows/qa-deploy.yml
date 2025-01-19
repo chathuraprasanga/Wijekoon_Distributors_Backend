@@ -56,7 +56,7 @@ jobs:
             [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
             nvm use node
 
-            cd /var/www/qa/wd-server-qa
+            cd /var/www/qa/qa-wd-server
             rm -rf dist
             git reset --hard
             git pull origin qa
