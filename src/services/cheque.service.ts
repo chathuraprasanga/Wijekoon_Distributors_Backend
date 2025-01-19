@@ -3,7 +3,6 @@ import {
     countCheques,
     createChequeRepo,
     findChequeRepo,
-    findChequesRepo,
     getPagedChequesRepo,
     updateChequeRepo,
 } from "../repositories/cheque.repository";
@@ -81,17 +80,17 @@ export const findAllChequeService = async (data: any) => {
 
 export const updateChequeService = async (id: string, data: any) => {
     try {
-        const existCheques = await findChequesRepo({
-            customer: data.customer,
-            number: data.number,
-        });
-        const duplicateCheques = existCheques.filter(
-            (c: any) => !c._id.equals(new ObjectId(id)) // Use .equals() for ObjectId comparison
-        );
-
-        if (duplicateCheques.length > 0) {
-            throw new Error(errors.CHEQUE_ALREADY_EXIST);
-        }
+        // const existCheques = await findChequesRepo({
+        //     customer: data.customer,
+        //     number: data.number,
+        // });
+        // const duplicateCheques = existCheques.filter(
+        //     (c: any) => !c._id.equals(new ObjectId(id)) // Use .equals() for ObjectId comparison
+        // );
+        //
+        // if (duplicateCheques.length > 0) {
+        //     throw new Error(errors.CHEQUE_ALREADY_EXIST);
+        // }
 
         return await updateChequeRepo({ _id: id }, data);
     } catch (e: any) {
