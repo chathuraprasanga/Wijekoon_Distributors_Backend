@@ -84,7 +84,7 @@ jobs:
             nvm use node
 
             cd /var/www/qa/qa-wd-server
-            pm2 describe "wd-server-qa" >/dev/null 2>&1 || pm2 start npm --name "wd-server-qa" -- qa
+            pm2 describe "wd-server-qa" >/dev/null 2>&1 || pm2 start npm --name "wd-server-qa" -- run qa
             pm2 restart "wd-server-qa" --update-env
             pm2 save
           EOF
