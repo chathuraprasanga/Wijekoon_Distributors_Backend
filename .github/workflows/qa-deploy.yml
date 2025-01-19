@@ -47,7 +47,7 @@ jobs:
           EOF
 
       # Deploy backend qa to Droplet
-      - name: Deploy Wijekoon Distributors Backend to Droplet
+      - name: Deploy Wijekoon Distributors Qa Backend to Droplet
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }} << 'EOF'
             set -e
@@ -66,7 +66,7 @@ jobs:
             npm run build
 
             export NODE_OPTIONS="--max_old_space_size=512"
-            pm2 describe "wd-server-qa" >/dev/null 2>&1 || pm2 start npm --name "wd-server-qa" -- qa
+            pm2 describe "wd-server-qa" >/dev/null 2>&1 || pm2 start npm --name "wd-server-qa" -- run qa
             pm2 restart "wd-server-qa" --update-env
             pm2 save
 
