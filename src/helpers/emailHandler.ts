@@ -32,6 +32,11 @@ export const createSubjectToEmail = async (type: string, data: any) => {
 // Email body generator
 export const createEmailBody = async (type: string, data: any) => {
     try {
+        const loginUrl =
+            process.env.NODE_ENV === "qa"
+                ? "https://qa-wd-app.xcorpion.xyz/login"
+                : "https://wd-app.xcorpion.xyz/login";
+        const supportEmail = process.env.SUPPORT_EMAIL || "support@xcorpion.xyz";
         if (type === EMAIL_TYPES.ADD_USER) {
             return `
             ${getHeader("Welcome to Wijekoon Distributors")}
@@ -46,9 +51,9 @@ export const createEmailBody = async (type: string, data: any) => {
                     <p>Role: ${rolePreview(data.role)}</p>
                     <p>Password: ${data.password}</p>
                     <br>
-                    <p>Please change your password immediatly. Click here to <a href="https://wd-app.xcorpion.xyz/login">login</a></p>
+                    <p>Please change your password immediately. Click here to <a href="${loginUrl}" style="color: #1a73e8;">login</a>.</p>
                     <br>
-                    <p>If you have any questions, feel free to reach out to our support team at <a href="mailto:support@xcorpion.xyz">support@xcorpion.xyz</a>.</p>
+                    <p>If you have any questions, feel free to reach out to our support team at <a href="mailto:${supportEmail}">${supportEmail}</a>.</p>
                     <p>Thank you for joining us!</p>
                     <p>Best regards,</p>
                     <p><strong>The Wijekoon Enterprises Team</strong></p>

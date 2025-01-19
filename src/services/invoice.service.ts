@@ -15,7 +15,7 @@ import { findSupplierRepo } from "../repositories/supplier.repository";
 import {
     countBulkInvoicePayments,
     createBulkInvoicePaymentRepo,
-    findBulkInvoicePaymentRepo, getPagedBulkInvoicePaymentsRepo,
+    findBulkInvoicePaymentRepo, findLastBulkInvoicePaymentRepo, getPagedBulkInvoicePaymentsRepo,
 } from "../repositories/bulkInvoicePayment.repository";
 
 const ObjectId = mongoose.Types.ObjectId;
@@ -325,20 +325,26 @@ export const createBulkInvoicePaymentService = async (data: any) => {
 };
 
 const generatePaymentId = async () => {
-    const lastBulkInvoicePayment = await findBulkInvoicePaymentRepo({
-        sort: { createdAt: -1 },
-        limit: 1,
-    });
-    const paymentId = lastBulkInvoicePayment?.paymentId;
-    if (paymentId) {
-        const paymentIdNumber = parseInt(paymentId.split("-")[2]);
-        if (paymentIdNumber >= 9999) {
-            return `W-PAY-${paymentIdNumber + 1}`;
+    try {
+        const lastBulkInvoicePayment = await findLastBulkInvoicePaymentRepo();
+
+        const paymentId = lastBulkInvoicePayment?.paymentId;
+        if (paymentId) {
+
+            if (!/^W-PAY-\d{4}$/.test(paymentId)) {
+                throw new Error(`Invalid paymentId format: ${paymentId}`);
+            }
+
+            const paymentIdNumber = parseInt(paymentId.split("-")[2]);
+
+            const newPaymentIdNumber = paymentIdNumber + 1;
+            return `W-PAY-${String(newPaymentIdNumber).padStart(4, "0")}`;
+        } else {
+            return "W-PAY-0001";
         }
-        const newPaymentIdNumber = paymentIdNumber + 1;
-        return `W-PAY-${String(newPaymentIdNumber).padStart(4, "0")}`;
-    } else {
-        return "W-PAY-0001";
+    } catch (e:any) {
+        console.error(e.message);
+        throw e;
     }
 };
 
