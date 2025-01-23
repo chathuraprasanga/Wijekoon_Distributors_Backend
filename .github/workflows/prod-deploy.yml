@@ -46,7 +46,7 @@ jobs:
             done
           EOF
 
-      # Deploy backend qa to Droplet
+      # Deploy backend Prod to Droplet
       - name: Deploy Wijekoon Distributors Prod Backend to Droplet
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }} << 'EOF'
@@ -73,8 +73,8 @@ jobs:
             npm cache clean --force
           EOF
 
-      # Restart backend prod server
-      - name: Restart Production Server
+      # Restart backend Qa server
+      - name: Deploy Wijekoon Distributors Qa Backend to Droplet
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }} << 'EOF'
             set -e
