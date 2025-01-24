@@ -1,8 +1,11 @@
 import {
     createWarehouseRepo,
-    findWarehouseRepo,
+    findWarehouseRepo, findWarehousesRepo,
     updateWarehouseRepo,
 } from "../repositories/warehouse.repository";
+import mongoose from "mongoose";
+
+const ObjectId = mongoose.Types.ObjectId;
 
 export const createWarehouseService = async (data: any) => {
     try {
@@ -42,9 +45,20 @@ const generateWarehouseId = async (): Promise<string> => {
 
 export const updateWarehouseService = async (id: any, data: any) => {
     try {
-        return await updateWarehouseRepo({ _id: id }, data);
+        return await updateWarehouseRepo({ _id: new ObjectId(id) }, data);
     } catch (e: any) {
         console.error(e.message);
         throw e;
     }
 };
+
+export const findAllWarehouseService = async (data: any) => {
+    try {
+        const filters = data.filters;
+        return await findWarehousesRepo(filters);
+    } catch (e: any) {
+        console.error(e.message);
+        throw e;
+    }
+};
+
