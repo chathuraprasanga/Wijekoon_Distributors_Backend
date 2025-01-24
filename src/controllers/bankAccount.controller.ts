@@ -41,7 +41,7 @@ export const getAllBankAccountsController = async (
         const response = await findAllBankAccountService(body);
         return sendResponse(
             res,
-            201,
+            200,
             "Fetch bank accounts successfully",
             response
         );

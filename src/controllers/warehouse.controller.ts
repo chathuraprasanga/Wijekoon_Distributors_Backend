@@ -2,6 +2,7 @@ import { IRequest, IResponse } from "../interfaces/dto";
 import { sendResponse } from "../helpers/sendResponse";
 import {
     createWarehouseService,
+    findAllWarehouseService,
     updateWarehouseService,
 } from "../services/warehouse.service";
 
@@ -48,6 +49,30 @@ export const warehouseStatusChangeController = async (
             res,
             500,
             "Internal server error",
+            null,
+            error.message
+        );
+    }
+};
+
+export const getAllWarehousesController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const body = req.body;
+        const response = await findAllWarehouseService(body);
+        return sendResponse(
+            res,
+            200,
+            "Fetch warehouses successfully",
+            response
+        );
+    } catch (error: any) {
+        return sendResponse(
+            res,
+            500,
+            "Fetch warehouses failed",
             null,
             error.message
         );
