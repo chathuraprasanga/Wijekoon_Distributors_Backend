@@ -3,7 +3,7 @@ import { sendResponse } from "../helpers/sendResponse";
 import errors from "../constants/errors";
 import {
     changeStatusProductService,
-    createProductService,
+    createProductService, findAllProductsService,
     findProductByIdService, getPagedProductsService,
     updateProductService,
 } from "../services/product.service";
@@ -14,7 +14,7 @@ export const getAllProductsController = async (
 ): Promise<any> => {
     try {
         const body = req.body;
-        const response = await getPagedProductsService(body);
+        const response = await findAllProductsService(body);
         return sendResponse(
             res,
             200,

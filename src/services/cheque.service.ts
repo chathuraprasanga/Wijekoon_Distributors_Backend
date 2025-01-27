@@ -3,6 +3,7 @@ import {
     countCheques,
     createChequeRepo,
     findChequeRepo,
+    findChequesRepo,
     getPagedChequesRepo,
     updateChequeRepo,
 } from "../repositories/cheque.repository";
@@ -135,12 +136,12 @@ export const getPagedChequesService = async (data: any) => {
             matchFilter.$and.push({ depositDate: depositDate });
         }
 
-        if(fromDate) {
-            matchFilter.$and.push({ depositDate: {$gte: fromDate }})
+        if (fromDate) {
+            matchFilter.$and.push({ depositDate: { $gte: fromDate } });
         }
 
-        if(toDate) {
-            matchFilter.$and.push({ depositDate: {$lte: toDate }})
+        if (toDate) {
+            matchFilter.$and.push({ depositDate: { $lte: toDate } });
         }
 
         const response = await getPagedChequesRepo(
@@ -159,3 +160,35 @@ export const getPagedChequesService = async (data: any) => {
         throw e;
     }
 };
+
+export const changeChequeStatusStatusSendToSupplierService = async () => {
+    try {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const outdatedCheques = await findChequesRepo({
+            chequeStatus: "SEND TO SUPPLIER",
+            depositDate: { $lt: sevenDaysAgo },
+        });
+
+        if (outdatedCheques.length > 0) {
+            console.log("Updating outdated cheques:", outdatedCheques);
+
+            await Promise.all(
+                outdatedCheques.map((cheque) =>
+                    updateChequeRepo(cheque._id, { chequeStatus: "COMPLETED" })
+                )
+            );
+
+            console.log(`${outdatedCheques.length} cheque(s) updated to COMPLETED.`);
+        } else {
+            console.log("No outdated cheques found.");
+        }
+
+        return outdatedCheques.length;
+    } catch (e: any) {
+        console.error("Error updating cheque statuses:", e.message);
+        throw e;
+    }
+};
+

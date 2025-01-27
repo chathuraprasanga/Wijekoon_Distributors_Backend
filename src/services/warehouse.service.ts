@@ -1,16 +1,25 @@
 import {
+    countWarehouses,
     createWarehouseRepo,
-    findWarehouseRepo, findWarehousesRepo,
+    findWarehouseRepo,
+    findWarehousesRepo,
+    getPagedWarehousesRepo,
     updateWarehouseRepo,
 } from "../repositories/warehouse.repository";
 import mongoose from "mongoose";
+import { warehouseProductMappingCreateService } from "./warehouseProductMapping.service";
+import { findWarehouseProductMappings } from "../repositories/warehouseProductMapping.repository";
 
 const ObjectId = mongoose.Types.ObjectId;
 
 export const createWarehouseService = async (data: any) => {
     try {
         data.id = await generateWarehouseId();
-        return await createWarehouseRepo(data);
+        const warehouse = await createWarehouseRepo(data);
+        const warehouseProductMapping =
+            await warehouseProductMappingCreateService(warehouse);
+        const plainWarehouse = warehouse.toObject();
+        return { ...plainWarehouse, products: warehouseProductMapping };
     } catch (e: any) {
         console.error(e.message);
         throw e;
@@ -21,7 +30,6 @@ const generateWarehouseId = async (): Promise<string> => {
     try {
         const lastWarehouse = await findWarehouseRepo({
             sort: { createdAt: -1 },
-            limit: 1,
         });
 
         if (lastWarehouse?.id) {
@@ -62,3 +70,49 @@ export const findAllWarehouseService = async (data: any) => {
     }
 };
 
+export const getPagedWarehousesService = async (data: any) => {
+    try {
+        const filters = data.filters;
+        const { searchQuery, pageSize, pageIndex, sort, status } = filters;
+        const matchFilter: any = { $and: [] };
+
+        if (searchQuery) {
+            matchFilter.$or = [
+                { city: { $regex: searchQuery, $options: "i" } },
+                { id: { $regex: searchQuery, $options: "i" } },
+            ];
+        }
+
+        if (status) {
+            matchFilter.$and.push({ status: status !== "INACTIVE" });
+        }
+
+        const response = await getPagedWarehousesRepo(
+            matchFilter,
+            pageSize,
+            pageIndex,
+            sort
+        );
+        const documentCount = await countWarehouses(matchFilter);
+        return {
+            response,
+            metadata: { total: documentCount, pageIndex },
+        };
+    } catch (e: any) {
+        console.error(e.message);
+        throw e;
+    }
+};
+
+export const findWarehouseByIdService = async (id: string) => {
+    try {
+        const warehouse = await findWarehouseRepo({ _id: new ObjectId(id) });
+        const warehouseProductMappings = await findWarehouseProductMappings({
+            warehouse: new ObjectId(id),
+        });
+        return { ...warehouse, products: warehouseProductMappings };
+    } catch (e: any) {
+        console.error(e.message);
+        throw e;
+    }
+};
