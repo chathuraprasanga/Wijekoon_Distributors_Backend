@@ -2,7 +2,7 @@ import { IRequest, IResponse } from "../interfaces/dto";
 import { sendResponse } from "../helpers/sendResponse";
 import {
     createWarehouseService,
-    findAllWarehouseService,
+    findAllWarehouseService, findWarehouseByIdService, getPagedWarehousesService,
     updateWarehouseService,
 } from "../services/warehouse.service";
 
@@ -78,3 +78,57 @@ export const getAllWarehousesController = async (
         );
     }
 };
+
+export const getPagedWarehousesController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const body = req.body;
+        const response = await getPagedWarehousesService(body);
+        return sendResponse(
+            res,
+            200,
+            "Warehouses fetched successfully",
+            response,
+            null
+        );
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            "Internal server error",
+            null,
+            error.message
+        );
+    }
+};
+
+export const getWarehouseController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const { id } = req.params;
+        const response = await findWarehouseByIdService(id);
+        return sendResponse(
+            res,
+            200,
+            "Warehouse fetched successfully",
+            response,
+            null
+        );
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            "Internal server error",
+            null,
+            error.message
+        );
+    }
+};
+
+

@@ -13,7 +13,8 @@ const ObjectId = mongoose.Types.ObjectId;
 
 export const findAllProductsService = async (data: any) => {
     try {
-        return await findProductsRepo(data);
+        const filters = data.filters;
+        return await findProductsRepo(filters);
     } catch (e: any) {
         console.error(e.message);
         throw e;

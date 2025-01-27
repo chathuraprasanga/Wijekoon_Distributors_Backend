@@ -9,7 +9,7 @@ export const updateWarehouseRepo = (filters: any, data: any) => {
 };
 
 export const findWarehouseRepo = (filters: any) => {
-    return Warehouse.findOne(filters).exec();
+    return Warehouse.findOne(filters).lean().exec();
 };
 
 export const findWarehousesRepo = (filters: any) => {
@@ -18,4 +18,21 @@ export const findWarehousesRepo = (filters: any) => {
 
 export const aggregateWarehouseRepo = (pipeline: any) => {
     return Warehouse.aggregate(pipeline).exec();
+};
+
+export const getPagedWarehousesRepo = (
+    matchFilter: any,
+    pageSize: any,
+    pageIndex: any,
+    sort: any
+) => {
+    return Warehouse.find(matchFilter)
+        .sort({ createdAt: sort })
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+        .exec();
+};
+
+export const countWarehouses = (filters: any) => {
+    return Warehouse.countDocuments(filters).exec();
 };
