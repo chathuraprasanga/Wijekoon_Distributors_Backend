@@ -10,7 +10,6 @@ import ERROR_MESSAGES from "../constants/errors";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import errors from "../constants/errors";
-import { changeChequePaymentStatusService } from "./chequePayment.service";
 
 const ACCESS_TOKEN_SECRET: any = process.env.access_secret;
 const REFRESH_TOKEN_SECRET: any = process.env.refresh_secret;

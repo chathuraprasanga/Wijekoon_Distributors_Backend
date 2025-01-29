@@ -8,7 +8,6 @@ import {
 } from "../repositories/chequePayment.repository";
 import { findCustomersRepo } from "../repositories/customer.repository";
 import { findSuppliersRepo } from "../repositories/supplier.repository";
-import { findChequesRepo, updateChequeRepo } from "../repositories/cheque.repository";
 
 export const createChequePaymentService = async (data: any) => {
     try {
