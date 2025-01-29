@@ -74,7 +74,7 @@ jobs:
           EOF
 
       # Restart backend prod server
-      - name: Restart Production Server
+      - name: Deploy Wijekoon Distributors Prod Backend to Droplet
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }} << 'EOF'
             set -e

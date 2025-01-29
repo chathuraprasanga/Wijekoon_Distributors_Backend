@@ -1,131 +1,134 @@
 import { IRequest, IResponse } from "../interfaces/dto";
 import { sendResponse } from "../helpers/sendResponse";
 import {
-    changeBankDetailStatusService,
-    createBankAccountService,
-    findAllBankAccountService,
-    findBankAccountService,
-    updateBankAccountService,
-} from "../services/bankAccount.service";
+    createWarehouseService,
+    findAllWarehouseService, findWarehouseByIdService, getPagedWarehousesService,
+    updateWarehouseService,
+} from "../services/warehouse.service";
 
-export const createBankAccountController = async (
+export const createWarehouseController = async (
     req: IRequest,
     res: IResponse
 ): Promise<any> => {
     try {
         const body = req.body;
-        const response = await createBankAccountService(body);
+        const response = await createWarehouseService(body);
         return sendResponse(
             res,
             201,
-            "Bank account created successfully",
+            "Warehouse created successfully",
             response
         );
     } catch (error: any) {
         return sendResponse(
             res,
             500,
-            "Bank account created failed",
+            "Internal server error",
             null,
             error.message
         );
     }
 };
 
-export const getAllBankAccountsController = async (
+export const warehouseStatusChangeController = async (
     req: IRequest,
     res: IResponse
 ): Promise<any> => {
     try {
+        const id = req.params;
         const body = req.body;
-        const response = await findAllBankAccountService(body);
+        const response = await updateWarehouseService(id, body);
         return sendResponse(
             res,
             200,
-            "Fetch bank accounts successfully",
+            "Warehouse status changes successfully",
             response
         );
     } catch (error: any) {
         return sendResponse(
             res,
             500,
-            "Fetch bank accounts failed",
+            "Internal server error",
             null,
             error.message
         );
     }
 };
 
-export const getBankAccountController = async (
+export const getAllWarehousesController = async (
     req: IRequest,
     res: IResponse
 ): Promise<any> => {
     try {
-        const { id } = req.params;
-        const response = await findBankAccountService(id);
-        return sendResponse(
-            res,
-            201,
-            "Fetch bank account successfully",
-            response
-        );
-    } catch (error: any) {
-        return sendResponse(
-            res,
-            500,
-            "Fetch bank account failed",
-            null,
-            error.message
-        );
-    }
-};
-
-export const updateBankAccountController = async (
-    req: IRequest,
-    res: IResponse
-): Promise<any> => {
-    try {
-        const { id } = req.params;
         const body = req.body;
-        const response = await updateBankAccountService(id, body);
-        return sendResponse(
-            res,
-            201,
-            "Update bank account successfully",
-            response
-        );
-    } catch (error: any) {
-        return sendResponse(
-            res,
-            500,
-            "Update bank account failed",
-            null,
-            error.message
-        );
-    }
-};
-
-export const bankDetailStatusChangeController = async (
-    req: IRequest,
-    res: IResponse
-): Promise<any> => {
-    try {
-        const { id } = req.params;
-        const body = req.body;
-        const response = await changeBankDetailStatusService(id, body);
+        const response = await findAllWarehouseService(body);
         return sendResponse(
             res,
             200,
-            "Change bank account status successfully",
+            "Fetch warehouses successfully",
             response
         );
     } catch (error: any) {
         return sendResponse(
             res,
             500,
-            "Update bank account failed",
+            "Fetch warehouses failed",
             null,
             error.message
         );
     }
 };
+
+export const getPagedWarehousesController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const body = req.body;
+        const response = await getPagedWarehousesService(body);
+        return sendResponse(
+            res,
+            200,
+            "Warehouses fetched successfully",
+            response,
+            null
+        );
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            "Internal server error",
+            null,
+            error.message
+        );
+    }
+};
+
+export const getWarehouseController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const { id } = req.params;
+        const response = await findWarehouseByIdService(id);
+        return sendResponse(
+            res,
+            200,
+            "Warehouse fetched successfully",
+            response,
+            null
+        );
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            "Internal server error",
+            null,
+            error.message
+        );
+    }
+};
+
+

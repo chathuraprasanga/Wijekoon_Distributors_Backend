@@ -130,3 +130,34 @@ export const findAllSystemPayeesService = async () => {
         throw e;
     }
 };
+
+export const changeChequePaymentStatusService = async () => {
+    try {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const outdatedChequePayments = await findAllChequePaymentsRepo({
+            paymentStatus: "PENDING",
+            date: { $lt: sevenDaysAgo },
+        });
+
+        if (outdatedChequePayments.length > 0) {
+            console.log("Updating outdated cheque payments:", outdatedChequePayments);
+
+            await Promise.all(
+                outdatedChequePayments.map((chequePayment) =>
+                    updateChequePaymentRepo(chequePayment._id, { paymentStatus: "COMPLETED" })
+                )
+            );
+
+            console.log(`${outdatedChequePayments.length} cheque payment(s) updated to COMPLETED.`);
+        } else {
+            console.log("No outdated cheque payments found.");
+        }
+
+        return outdatedChequePayments.length;
+    } catch (e: any) {
+        console.error("Error updating cheque payment statuses:", e.message);
+        throw e;
+    }
+};
