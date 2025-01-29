@@ -8,6 +8,7 @@ import {
 } from "../repositories/chequePayment.repository";
 import { findCustomersRepo } from "../repositories/customer.repository";
 import { findSuppliersRepo } from "../repositories/supplier.repository";
+import { findChequesRepo, updateChequeRepo } from "../repositories/cheque.repository";
 
 export const createChequePaymentService = async (data: any) => {
     try {
@@ -127,6 +128,37 @@ export const findAllSystemPayeesService = async () => {
         return [customersNames, suppliersNames, payeesNames].flat();
     } catch (e: any) {
         console.log(e.message);
+        throw e;
+    }
+};
+
+export const changeChequePaymentStatusService = async () => {
+    try {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const outdatedChequePayments = await findAllChequePaymentsRepo({
+            paymentStatus: "PENDING",
+            date: { $lt: sevenDaysAgo },
+        });
+
+        if (outdatedChequePayments.length > 0) {
+            console.log("Updating outdated cheque payments:", outdatedChequePayments);
+
+            await Promise.all(
+                outdatedChequePayments.map((chequePayment) =>
+                    updateChequePaymentRepo(chequePayment._id, { paymentStatus: "COMPLETED" })
+                )
+            );
+
+            console.log(`${outdatedChequePayments.length} cheque payment(s) updated to COMPLETED.`);
+        } else {
+            console.log("No outdated cheque payments found.");
+        }
+
+        return outdatedChequePayments.length;
+    } catch (e: any) {
+        console.error("Error updating cheque payment statuses:", e.message);
         throw e;
     }
 };

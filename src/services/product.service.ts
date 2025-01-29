@@ -8,6 +8,7 @@ import {
 } from "../repositories/product.repository";
 import errors from "../constants/errors";
 import mongoose from "mongoose";
+import { warehouseNewProductMappingCreateService } from "./warehouseProductMapping.service";
 
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -28,7 +29,9 @@ export const createProductService = async (data: any) => {
         if (existProduct) {
             throw new Error(errors.PRODUCT_ALREADY_EXIST);
         }
-        return await createProductRepo(data);
+        const response = await createProductRepo(data);
+        await warehouseNewProductMappingCreateService(response);
+        return response;
     } catch (e: any) {
         console.error(e.mesage);
         throw e;

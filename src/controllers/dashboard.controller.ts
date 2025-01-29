@@ -3,6 +3,7 @@ import { sendResponse } from "../helpers/sendResponse";
 import errors from "../constants/errors";
 import { findDashboardDetailsService } from "../services/dashboard.service";
 import { changeChequeStatusStatusSendToSupplierService } from "../services/cheque.service";
+import { changeChequePaymentStatusService } from "../services/chequePayment.service";
 
 export const getDashboardDetails = async (
     req: IRequest,
@@ -10,8 +11,9 @@ export const getDashboardDetails = async (
 ): Promise<any> => {
     try {
         const body = req.body;
-        // send to supplier 7 days older cheques completed
+        // send to supplier 7 days older cheques and chequePayments completed
         await changeChequeStatusStatusSendToSupplierService();
+        await changeChequePaymentStatusService();
         const response = await findDashboardDetailsService(body);
         return sendResponse(
             res,
