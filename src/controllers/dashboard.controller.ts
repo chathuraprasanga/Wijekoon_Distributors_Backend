@@ -12,8 +12,8 @@ export const getDashboardDetails = async (
     try {
         const body = req.body;
         // send to supplier 7 days older cheques and chequePayments completed
-        await changeChequeStatusStatusSendToSupplierService();
-        await changeChequePaymentStatusService();
+        // await changeChequeStatusStatusSendToSupplierService();
+        // await changeChequePaymentStatusService();
         const response = await findDashboardDetailsService(body);
         return sendResponse(
             res,
