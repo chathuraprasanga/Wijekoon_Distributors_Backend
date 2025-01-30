@@ -1,5 +1,8 @@
 import { findProductsRepo } from "../repositories/product.repository";
-import { createWarehouseProductMappingRepo } from "../repositories/warehouseProductMapping.repository";
+import {
+    createWarehouseProductMappingRepo,
+    findWarehouseProductMapping, updateWarehouseProductMapping,
+} from "../repositories/warehouseProductMapping.repository";
 import { findWarehousesRepo } from "../repositories/warehouse.repository";
 
 export const warehouseProductMappingCreateService = async (warehouse: any) => {
@@ -33,3 +36,33 @@ export const warehouseNewProductMappingCreateService = async (product: any) => {
         throw e;
     }
 };
+
+export const updateStockService = async (id: any, data: any) => {
+    try {
+        let masterResponse: any[] = [];
+
+        const productMappingPromise = data.map(async (prod:any) => {
+            const productMapping = await findWarehouseProductMapping({ _id: prod.id });
+
+            if (!productMapping) {
+                throw new Error(`Product mapping not found for ID: ${prod.id}`);
+            }
+
+            productMapping.count += prod.amount;
+
+            const response = await updateWarehouseProductMapping(
+                { _id: prod.id },
+                { count: productMapping.count }
+            );
+
+            return response;
+        });
+        masterResponse = await Promise.all(productMappingPromise);
+
+        return masterResponse;
+    } catch (e: any) {
+        console.error("Stock Update Error:", e.message);
+        throw e;
+    }
+};
+

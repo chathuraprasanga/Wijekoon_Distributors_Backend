@@ -2,7 +2,7 @@ import authMiddleware from "../middlewares/auth.middleware";
 import { Router } from "express";
 import {
     createWarehouseController,
-    getAllWarehousesController, getPagedWarehousesController, getWarehouseController,
+    getAllWarehousesController, getPagedWarehousesController, getWarehouseController, updateStockController,
     warehouseStatusChangeController,
 } from "../controllers/warehouse.controller";
 
@@ -17,5 +17,6 @@ warehouseRoute.put(
 warehouseRoute.post("/warehouses", authMiddleware, getAllWarehousesController);
 warehouseRoute.post("/paged-warehouses", authMiddleware, getPagedWarehousesController);
 warehouseRoute.get("/warehouse/:id", authMiddleware, getWarehouseController);
+warehouseRoute.put("/stock-update/:id", authMiddleware, updateStockController);
 
 export default warehouseRoute;

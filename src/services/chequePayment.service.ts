@@ -56,6 +56,7 @@ export const getPagedChequePaymentsService = async (data: any) => {
         if (searchQuery) {
             matchFilter.$or = [
                 { payFor: { $regex: searchQuery, $options: "i" } },
+                { number: { $regex: searchQuery, $options: "i" } },
             ];
         }
 
@@ -134,23 +135,36 @@ export const findAllSystemPayeesService = async () => {
 export const changeChequePaymentStatusService = async () => {
     try {
         const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 7);
+        sevenDaysAgo.setUTCHours(0, 0, 0, 0); // Ensure proper comparison
 
         const outdatedChequePayments = await findAllChequePaymentsRepo({
             paymentStatus: "PENDING",
-            date: { $lt: sevenDaysAgo },
+            date: { $lt: sevenDaysAgo.toISOString() }, // Ensure UTC comparison
         });
 
+        console.log("Outdated Payments Before Update:", outdatedChequePayments.length);
+        console.log("Outdated Payments Before Update:", outdatedChequePayments);
+
+
+
         if (outdatedChequePayments.length > 0) {
-            console.log("Updating outdated cheque payments:", outdatedChequePayments);
+            console.log(
+                "Updating outdated cheque payments:",
+                outdatedChequePayments
+            );
 
             await Promise.all(
                 outdatedChequePayments.map((chequePayment) =>
-                    updateChequePaymentRepo(chequePayment._id, { paymentStatus: "COMPLETED" })
+                    updateChequePaymentRepo(chequePayment._id, {
+                        paymentStatus: "COMPLETED",
+                    })
                 )
             );
 
-            console.log(`${outdatedChequePayments.length} cheque payment(s) updated to COMPLETED.`);
+            console.log(
+                `${outdatedChequePayments.length} cheque payment(s) updated to COMPLETED.`
+            );
         } else {
             console.log("No outdated cheque payments found.");
         }

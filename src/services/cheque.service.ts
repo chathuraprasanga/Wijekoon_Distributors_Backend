@@ -121,8 +121,15 @@ export const getPagedChequesService = async (data: any) => {
             depositDate,
             fromDate,
             toDate,
+            searchQuery
         } = filters;
         const matchFilter: any = { $and: [] };
+
+        if (searchQuery) {
+            matchFilter.$or = [
+                { number: { $regex: searchQuery, $options: "i" } },
+            ];
+        }
 
         if (customer) {
             matchFilter.$and.push({ customer: new ObjectId(customer) });
@@ -164,11 +171,12 @@ export const getPagedChequesService = async (data: any) => {
 export const changeChequeStatusStatusSendToSupplierService = async () => {
     try {
         const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 7);
+        sevenDaysAgo.setUTCHours(0, 0, 0, 0); // Ensure proper comparison
 
         const outdatedCheques = await findChequesRepo({
             chequeStatus: "SEND TO SUPPLIER",
-            depositDate: { $lt: sevenDaysAgo },
+            depositDate: { $lt: sevenDaysAgo.toISOString() },
         });
 
         if (outdatedCheques.length > 0) {
