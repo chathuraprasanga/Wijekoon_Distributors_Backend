@@ -15,7 +15,9 @@ import { findSupplierRepo } from "../repositories/supplier.repository";
 import {
     countBulkInvoicePayments,
     createBulkInvoicePaymentRepo,
-    findBulkInvoicePaymentRepo, findLastBulkInvoicePaymentRepo, getPagedBulkInvoicePaymentsRepo,
+    findBulkInvoicePaymentRepo,
+    findLastBulkInvoicePaymentRepo,
+    getPagedBulkInvoicePaymentsRepo,
 } from "../repositories/bulkInvoicePayment.repository";
 
 const ObjectId = mongoose.Types.ObjectId;
@@ -126,9 +128,24 @@ export const getBulkInvoicePaymentByIdService = async (id: string) => {
 export const getPagedInvoicesService = async (data: any) => {
     try {
         const filters = data.filters;
-        const { supplier, pageSize, pageIndex, sort, status, invoicedDate, fromDate, toDate } =
-            filters;
+        const {
+            supplier,
+            pageSize,
+            pageIndex,
+            sort,
+            status,
+            invoicedDate,
+            fromDate,
+            toDate,
+            searchQuery,
+        } = filters;
         const matchFilter: any = { $and: [] };
+
+        if (searchQuery) {
+            matchFilter.$or = [
+                { invoiceNumber: { $regex: searchQuery, $options: "i" } },
+            ];
+        }
 
         if (supplier) {
             matchFilter.$and.push({ supplier: new ObjectId(supplier) });
@@ -141,14 +158,13 @@ export const getPagedInvoicesService = async (data: any) => {
         if (invoicedDate) {
             matchFilter.$and.push({ invoiceDate: invoicedDate });
         }
-        if(fromDate) {
-            matchFilter.$and.push({ invoiceDate: {$gte: fromDate }})
+        if (fromDate) {
+            matchFilter.$and.push({ invoiceDate: { $gte: fromDate } });
         }
 
-        if(toDate) {
-            matchFilter.$and.push({ invoiceDate: {$lte: toDate }})
+        if (toDate) {
+            matchFilter.$and.push({ invoiceDate: { $lte: toDate } });
         }
-
 
         const response = await getPagedInvoicesRepo(
             matchFilter,
@@ -330,7 +346,6 @@ const generatePaymentId = async () => {
 
         const paymentId = lastBulkInvoicePayment?.paymentId;
         if (paymentId) {
-
             if (!/^W-PAY-\d{4}$/.test(paymentId)) {
                 throw new Error(`Invalid paymentId format: ${paymentId}`);
             }
@@ -342,7 +357,7 @@ const generatePaymentId = async () => {
         } else {
             return "W-PAY-0001";
         }
-    } catch (e:any) {
+    } catch (e: any) {
         console.error(e.message);
         throw e;
     }
@@ -351,8 +366,7 @@ const generatePaymentId = async () => {
 export const getPagedBulkInvoicePaymentsService = async (data: any) => {
     try {
         const filters = data.filters;
-        const { supplier, pageSize, pageIndex, sort } =
-            filters;
+        const { supplier, pageSize, pageIndex, sort } = filters;
         const matchFilter: any = { $and: [] };
 
         if (supplier) {

@@ -5,6 +5,7 @@ import {
     findAllWarehouseService, findWarehouseByIdService, getPagedWarehousesService,
     updateWarehouseService,
 } from "../services/warehouse.service";
+import { updateStockService } from "../services/warehouseProductMapping.service";
 
 export const createWarehouseController = async (
     req: IRequest,
@@ -116,6 +117,33 @@ export const getWarehouseController = async (
             res,
             200,
             "Warehouse fetched successfully",
+            response,
+            null
+        );
+    } catch (error: any) {
+        console.error(error.message);
+        return sendResponse(
+            res,
+            500,
+            "Internal server error",
+            null,
+            error.message
+        );
+    }
+};
+
+export const updateStockController = async (
+    req: IRequest,
+    res: IResponse
+): Promise<any> => {
+    try {
+        const { id } = req.params;
+        const body = req.body;
+        const response = await updateStockService(id, body);
+        return sendResponse(
+            res,
+            200,
+            "Warehouse stock updated successfully",
             response,
             null
         );
