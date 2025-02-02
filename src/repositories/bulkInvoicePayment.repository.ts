@@ -26,8 +26,6 @@ export const findLastBulkInvoicePaymentRepo = () => {
         .exec();
 };
 
-
-
 export const findBulkInvoicesPaymentRepo = (filters: any) => {
     return BulkInvoicePayment.find(filters).exec();
 };
