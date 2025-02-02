@@ -36,3 +36,9 @@ export const getPagedWarehousesRepo = (
 export const countWarehouses = (filters: any) => {
     return Warehouse.countDocuments(filters).exec();
 };
+
+export const findLastWarehouseRepo = () => {
+    return Warehouse.findOne()
+        .sort({ createdAt: -1 }) // Sort by `createdAt` in descending order
+        .exec();
+};

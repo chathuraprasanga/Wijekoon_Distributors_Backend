@@ -1,6 +1,6 @@
 import {
     countWarehouses,
-    createWarehouseRepo,
+    createWarehouseRepo, findLastWarehouseRepo,
     findWarehouseRepo,
     findWarehousesRepo,
     getPagedWarehousesRepo,
@@ -14,6 +14,10 @@ const ObjectId = mongoose.Types.ObjectId;
 
 export const createWarehouseService = async (data: any) => {
     try {
+        const existWarehouse = await findWarehouseRepo({ city: data.city });
+        if (existWarehouse) {
+            throw new Error("Warehouse already exists");
+        }
         data.id = await generateWarehouseId();
         const warehouse = await createWarehouseRepo(data);
         const warehouseProductMapping =
@@ -28,9 +32,7 @@ export const createWarehouseService = async (data: any) => {
 
 const generateWarehouseId = async (): Promise<string> => {
     try {
-        const lastWarehouse = await findWarehouseRepo({
-            sort: { createdAt: -1 },
-        });
+        const lastWarehouse:any = await findLastWarehouseRepo();
 
         if (lastWarehouse?.id) {
             // Extract and increment the numerical part of the ID
