@@ -11,6 +11,8 @@ export interface ISalesRecord extends Document {
     paymentDetails: any;
     paymentStatus: string;
     status: boolean;
+    metadata: any;
+    notes: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -64,6 +66,12 @@ const SalesRecordSchema: Schema<ISalesRecord> = new Schema<ISalesRecord>(
             type: Schema.Types.Boolean,
             default: true,
         },
+        metadata: {
+            type: Schema.Types.Mixed,
+        },
+        notes: {
+            type: Schema.Types.String,
+        }
     },
     {
         timestamps: true,

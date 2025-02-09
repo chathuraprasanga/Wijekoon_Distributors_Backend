@@ -19,7 +19,7 @@ export const createChequeService = async (data: any) => {
             number: data.number,
         });
         if (duplicateCheque) {
-            throw new Error(errors.CHEQUE_ALREADY_EXIST);
+            throw new Error(`${data.number} ${errors.CHEQUE_ALREADY_EXIST}`);
         }
         return await createChequeRepo(data);
     } catch (e: any) {
