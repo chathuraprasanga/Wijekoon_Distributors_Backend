@@ -7,19 +7,43 @@ import {
     getPagedSalesRecordsRepo,
     updateSalesRecordRepo,
 } from "../repositories/salesRecord.repository";
-import { findProductRepo } from "../repositories/product.repository";
 import mongoose from "mongoose";
 import errors from "../constants/errors";
+import { createChequeService } from "./cheque.service";
 
 const ObjectId = mongoose.Types.ObjectId;
 
 export const createSalesRecordService = async (data: any) => {
     try {
-        data.orderId = await generateOrderId();
-        data.amountDetails = await generateAmountDetails(data);
-        data.paymentDetails = await generatePaymentDetails(data);
-        data.paymentStatus = await getPaymentStatus(data.paymentDetails);
-        return await createSalesRecordRepo(data);
+        const sanitizedData = JSON.parse(JSON.stringify(data));
+        sanitizedData.metadata = { ...sanitizedData };
+
+        sanitizedData.orderId = await generateOrderId();
+        sanitizedData.orderDetails = await generateOrderDetails(
+            sanitizedData.products
+        );
+        sanitizedData.amountDetails =
+            await generateAmountDetails(sanitizedData);
+        sanitizedData.paymentDetails =
+            await generatePaymentDetails(sanitizedData);
+        sanitizedData.paymentStatus = await getPaymentStatus(
+            sanitizedData.paymentDetails
+        );
+
+        return await createSalesRecordRepo(sanitizedData);
+    } catch (e: any) {
+        console.error("ERROR:", e.message);
+        throw e;
+    }
+};
+
+const generateOrderDetails = (data: any) => {
+    try {
+        return data.map((d: any) => ({
+            product: d.product._id,
+            amount: d.amount,
+            lineTotal: d.lineTotal,
+        }));
     } catch (e: any) {
         console.error(e.message);
         throw e;
@@ -32,16 +56,16 @@ const generateOrderId = async () => {
 
         const orderId = lastOrder?.orderId;
         if (orderId) {
-            if (!/^W-ORD-\d{4}$/.test(orderId)) {
+            if (!/^W-SR-\d{4}$/.test(orderId)) {
                 throw new Error(`Invalid paymentId format: ${orderId}`);
             }
 
             const paymentIdNumber = parseInt(orderId.split("-")[2]);
 
             const newPaymentIdNumber = paymentIdNumber + 1;
-            return `W-ORD-${String(newPaymentIdNumber).padStart(4, "0")}`;
+            return `W-SR-${String(newPaymentIdNumber).padStart(4, "0")}`;
         } else {
-            return "W-ORD-0001";
+            return "W-SR-0001";
         }
     } catch (e: any) {
         console.error(e.message);
@@ -51,60 +75,12 @@ const generateOrderId = async () => {
 
 const generateAmountDetails = async (data: any) => {
     try {
-        const orderDetails = data.orderDetails;
-
-        if (!Array.isArray(orderDetails)) {
-            throw new Error("orderDetails must be an array.");
-        }
-
-        let newData: any[] = [];
-
-        // Fetch product data in parallel using Promise.all
-        const paymentDetailsPromise = orderDetails.map(async (o) => {
-            const productData = await findProductRepo({ _id: o.product });
-
-            if (!productData) {
-                throw new Error(`Product not found for ID: ${o.product}`);
-            }
-
-            const totalAmount = productData.unitPrice * o.amount;
-            const totalDiscount =
-                ((productData.unitPrice * o.discountPercentage) / 100) *
-                o.amount;
-            const totalTax =
-                ((productData.unitPrice * o.taxPercentage) / 100) * o.amount;
-            const netTotal = totalAmount - totalDiscount + totalTax;
-            const subTotal = netTotal + (data.otherCost || 0); // Ensure otherCost exists
-
-            return {
-                totalAmount,
-                totalDiscount,
-                totalTax,
-                netTotal,
-                subTotal,
-            };
-        });
-
-        newData = await Promise.all(paymentDetailsPromise);
-
-        // Aggregate the total amounts
-        return newData.reduce(
-            (acc, curr) => {
-                acc.totalAmount += curr.totalAmount;
-                acc.totalDiscount += curr.totalDiscount;
-                acc.totalTax += curr.totalTax;
-                acc.netTotal += curr.netTotal;
-                acc.subTotal += curr.subTotal;
-                return acc;
-            },
-            {
-                totalAmount: 0,
-                totalDiscount: 0,
-                totalTax: 0,
-                netTotal: 0,
-                subTotal: 0,
-            }
-        );
+        const subTotal = data.subTotal || 0;
+        const discount = data.discount || 0;
+        const tax = data.tax || 0;
+        const otherCost = data.otherCost || 0;
+        const netTotal = data.netTotal || 0;
+        return { subTotal, discount, tax, otherCost, netTotal };
     } catch (e: any) {
         console.error(e.message);
         throw e;
@@ -113,16 +89,26 @@ const generateAmountDetails = async (data: any) => {
 
 const generatePaymentDetails = async (data: any) => {
     try {
-        const paymentDetails = data.paymentDetails;
+        const { payments = {}, customer } = data; // Ensure payments is never undefined
+        const cheques = payments.cheques ?? [];
 
-        if (!paymentDetails) {
-            throw new Error("Missing paymentDetails in input data.");
+        // 🛠️ Correctly handle async cheque processing
+        if (cheques.length > 0) {
+            await Promise.all(
+                cheques.map(
+                    async (cheque: any) =>
+                        await createChequeService({ ...cheque, customer })
+                )
+            );
         }
 
-        // Extract values with defaulting to 0
-        const cashPayment = paymentDetails.cash || 0;
-        const chequePayment = paymentDetails.cheque || 0;
-        const creditAmount = paymentDetails.credit || 0;
+        // 🏦 Extract payment details safely
+        const cashPayment = payments.cash || 0;
+        const chequePayment = cheques.reduce(
+            (acc: number, c: any) => acc + (c.amount || 0),
+            0
+        );
+        const creditAmount = payments.credit || 0;
         const totalAmount = cashPayment + chequePayment + creditAmount;
 
         return {
@@ -130,10 +116,10 @@ const generatePaymentDetails = async (data: any) => {
             cashPayment,
             chequePayment,
             creditAmount,
-            isPaymentDone: creditAmount === 0, // Fixed incorrect syntax
+            isPaymentDone: creditAmount === 0,
         };
     } catch (e: any) {
-        console.error(e.message);
+        console.error("Error in generatePaymentDetails:", e.message);
         throw e;
     }
 };
@@ -221,7 +207,9 @@ export const findSalesRecordByIdService = async (id: string) => {
 
 export const updateSalesRecordService = async (id: string, data: any) => {
     try {
-        const existSalesRecords = await findSalesRecordsRepo({ phone: data.phone });
+        const existSalesRecords = await findSalesRecordsRepo({
+            phone: data.phone,
+        });
         const duplicateSalesRecords = existSalesRecords.filter(
             (c: any) => !c._id.equals(new ObjectId(id)) // Use .equals() for ObjectId comparison
         );
@@ -240,7 +228,10 @@ export const updateSalesRecordService = async (id: string, data: any) => {
 
 export const changeStatusSalesRecordService = async (id: string, data: any) => {
     try {
-        return await updateSalesRecordRepo({ _id: id }, { status: data.status });
+        return await updateSalesRecordRepo(
+            { _id: id },
+            { status: data.status }
+        );
     } catch (e: any) {
         console.error(e.message);
         throw e;
