@@ -13,7 +13,11 @@ export const updateSalesRecordRepo = (filters: any, data: any) => {
 };
 
 export const findSalesRecordRepo = (filters: any) => {
-    return SalesRecord.findOne(filters).lean().exec();
+    return SalesRecord.findOne(filters)
+        .populate("customer") // Populates customer details
+        .populate("orderDetails.product") // Populates product details inside orderDetails
+        .lean()
+        .exec();
 };
 
 export const findSalesRecordsRepo = (filters: any) => {
@@ -31,6 +35,7 @@ export const getPagedSalesRecordsRepo = (
     sort: any
 ) => {
     return SalesRecord.find(matchFilter)
+        .populate("customer")
         .sort({ createdAt: sort })
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))

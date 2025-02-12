@@ -92,7 +92,6 @@ const generatePaymentDetails = async (data: any) => {
         const { payments = {}, customer } = data; // Ensure payments is never undefined
         const cheques = payments.cheques ?? [];
 
-        // 🛠️ Correctly handle async cheque processing
         if (cheques.length > 0) {
             await Promise.all(
                 cheques.map(
@@ -102,7 +101,6 @@ const generatePaymentDetails = async (data: any) => {
             );
         }
 
-        // 🏦 Extract payment details safely
         const cashPayment = payments.cash || 0;
         const chequePayment = cheques.reduce(
             (acc: number, c: any) => acc + (c.amount || 0),
@@ -171,12 +169,12 @@ export const getPagedSalesRecordsService = async (data: any) => {
 
         if (searchQuery) {
             matchFilter.$or = [
-                { customer: { $regex: searchQuery, $options: "i" } },
+                { "customer.name": { $regex: searchQuery, $options: "i" } } // Fixed key notation
             ];
         }
 
         if (status) {
-            matchFilter.$and.push({ status: status !== "INACTIVE" });
+            matchFilter.$and.push({ paymentStatus: status });
         }
 
         const response = await getPagedSalesRecordsRepo(
@@ -186,6 +184,7 @@ export const getPagedSalesRecordsService = async (data: any) => {
             sort
         );
         const documentCount = await countSalesRecords(matchFilter);
+
         return {
             response,
             metadata: { total: documentCount, pageIndex },
@@ -196,7 +195,7 @@ export const getPagedSalesRecordsService = async (data: any) => {
     }
 };
 
-export const findSalesRecordByIdService = async (id: string) => {
+    export const findSalesRecordByIdService = async (id: string) => {
     try {
         return await findSalesRecordRepo({ _id: new ObjectId(id) });
     } catch (e: any) {
