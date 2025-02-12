@@ -29,7 +29,7 @@ const SalesRecordSchema: Schema<ISalesRecord> = new Schema<ISalesRecord>(
         },
         customer: {
             type: Schema.Types.ObjectId,
-            ref: "customer",
+            ref: "Customer",
             required: [true, "Customer is required"],
             validate: {
                 validator: async function (value: mongoose.Types.ObjectId) {
@@ -38,10 +38,17 @@ const SalesRecordSchema: Schema<ISalesRecord> = new Schema<ISalesRecord>(
                 message: errors.INVALID_CUSTOMER,
             },
         },
-        orderDetails: {
-            type: Schema.Types.Array,
-            required: [true, "Order details are required"],
-        },
+        orderDetails: [
+            {
+                product: {
+                    type: Schema.Types.ObjectId,
+                    ref: "Product", // Ensure it references the Product model
+                    required: true,
+                },
+                amount: { type: Number, required: true },
+                lineTotal: { type: Number, required: true },
+            },
+        ],
         amountDetails: {
             type: Schema.Types.Mixed,
             required: [true, "Amount details is required"],
