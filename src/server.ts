@@ -10,7 +10,7 @@ import { getLocalIPAddress } from "./utils/localIpAddress";
 
 // Load the correct environment file
 const env = process.env.NODE_ENV ?? "dev";
-dotenv.config({ path: path.resolve(__dirname, `./config/${env}.env`) });
+dotenv.config({ path: path.resolve(__dirname, `../config/${env}.env`) });
 
 // Run startup ASCII art
 console.log(startup());
