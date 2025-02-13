@@ -10,9 +10,17 @@ const ERROR_MESSAGES = {
     SUPPLIER_ALREADY_EXIST: "Supplier already exists. Please check the phone number.",
     CHEQUE_ALREADY_EXIST: "Cheque already exists by this customer. Please check the cheque number.",
     INVOICE_ALREADY_EXIST: "Invoice already exists by this invoice number. Please check the invoice number.",
+    SALES_RECORD_ALREADY_EXIST: "Sales record already exists by this invoice number. Please check the invoice number.",
     INVALID_CUSTOMER: "Invalid customer. Please check again.",
+    INVALID_WAREHOUSE: "Invalid warehouse. Please check again.",
+    INVALID_PRODUCT: "Invalid product. Please check again.",
     INVALID_SUPPLIER: "Invalid supplier. Please check again.",
+    INVALID_BANK_ACCOUNT: "Invalid bank account. Please check again.",
     EMAIL_IS_ALREADY_AVAILABLE: "Email is already available. Please check email again.",
+    INVALID_INVOICE: "Invalid Invoice. Please check again",
+    INVALID_CHEQUE_PAYMENT: "Invalid Cheque payment. Please check again",
+    INVALID_CHEQUE: "Invalid Cheque, Please check again",
+    USER_DEACTIVATED: "User is deactivated. Please contact the authorities"
 };
 
 export default ERROR_MESSAGES;

@@ -1,8 +1,10 @@
 import {
-    aggregateChequeRepo, countCheques,
+    aggregateChequeRepo,
+    countCheques,
     createChequeRepo,
     findChequeRepo,
-    findChequesRepo, getPagedChequesRepo,
+    findChequesRepo,
+    getPagedChequesRepo,
     updateChequeRepo,
 } from "../repositories/cheque.repository";
 import errors from "../constants/errors";
@@ -17,7 +19,7 @@ export const createChequeService = async (data: any) => {
             number: data.number,
         });
         if (duplicateCheque) {
-            throw new Error(errors.CHEQUE_ALREADY_EXIST);
+            throw new Error(`${data.number} ${errors.CHEQUE_ALREADY_EXIST}`);
         }
         return await createChequeRepo(data);
     } catch (e: any) {
@@ -26,24 +28,50 @@ export const createChequeService = async (data: any) => {
     }
 };
 
-export const findAllChequeService = async () => {
+export const findAllChequeService = async (data: any) => {
     try {
-        const pipeline = [
+        const { filters } = data;
+        const { status, chequeStatus } = filters;
+
+        const pipeline: any = [
             {
                 $lookup: {
                     as: "customer",
                     from: "customer",
                     foreignField: "_id",
-                    localField: "customer"
-                }
+                    localField: "customer",
+                },
             },
             {
                 $unwind: {
                     path: "$customer",
-                    preserveNullAndEmptyArrays: true
-                }
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+        ];
+
+        const match: any = {};
+
+        if (status) {
+            match.status = status;
+        }
+
+        if (chequeStatus) {
+            if (chequeStatus.length > 1) {
+                match["$or"] = chequeStatus.map((status: string) => ({
+                    chequeStatus: status,
+                }));
+            } else {
+                match["chequeStatus"] = chequeStatus[0];
             }
-        ]
+        }
+
+        if (Object.keys(match).length > 0) {
+            pipeline.push({
+                $match: match,
+            });
+        }
+
         return await aggregateChequeRepo(pipeline);
     } catch (e: any) {
         console.error(e.message);
@@ -53,17 +81,17 @@ export const findAllChequeService = async () => {
 
 export const updateChequeService = async (id: string, data: any) => {
     try {
-        const existCheques = await findChequesRepo({
-            customer: data.customer,
-            number: data.number,
-        });
-        const duplicateCheques = existCheques.filter(
-            (c: any) => !c._id.equals(new ObjectId(id)) // Use .equals() for ObjectId comparison
-        );
-
-        if (duplicateCheques.length > 0) {
-            throw new Error(errors.CHEQUE_ALREADY_EXIST);
-        }
+        // const existCheques = await findChequesRepo({
+        //     customer: data.customer,
+        //     number: data.number,
+        // });
+        // const duplicateCheques = existCheques.filter(
+        //     (c: any) => !c._id.equals(new ObjectId(id)) // Use .equals() for ObjectId comparison
+        // );
+        //
+        // if (duplicateCheques.length > 0) {
+        //     throw new Error(errors.CHEQUE_ALREADY_EXIST);
+        // }
 
         return await updateChequeRepo({ _id: id }, data);
     } catch (e: any) {
@@ -84,8 +112,24 @@ export const getChequeByIdService = async (id: string) => {
 export const getPagedChequesService = async (data: any) => {
     try {
         const filters = data.filters;
-        const { customer, pageSize, pageIndex, sort, status, depositDate } = filters;
+        const {
+            customer,
+            pageSize,
+            pageIndex,
+            sort,
+            status,
+            depositDate,
+            fromDate,
+            toDate,
+            searchQuery
+        } = filters;
         const matchFilter: any = { $and: [] };
+
+        if (searchQuery) {
+            matchFilter.$or = [
+                { number: { $regex: searchQuery, $options: "i" } },
+            ];
+        }
 
         if (customer) {
             matchFilter.$and.push({ customer: new ObjectId(customer) });
@@ -97,6 +141,14 @@ export const getPagedChequesService = async (data: any) => {
 
         if (depositDate) {
             matchFilter.$and.push({ depositDate: depositDate });
+        }
+
+        if (fromDate) {
+            matchFilter.$and.push({ depositDate: { $gte: fromDate } });
+        }
+
+        if (toDate) {
+            matchFilter.$and.push({ depositDate: { $lte: toDate } });
         }
 
         const response = await getPagedChequesRepo(
@@ -115,3 +167,36 @@ export const getPagedChequesService = async (data: any) => {
         throw e;
     }
 };
+
+export const changeChequeStatusStatusSendToSupplierService = async () => {
+    try {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 7);
+        sevenDaysAgo.setUTCHours(0, 0, 0, 0); // Ensure proper comparison
+
+        const outdatedCheques = await findChequesRepo({
+            chequeStatus: "SEND TO SUPPLIER",
+            depositDate: { $lt: sevenDaysAgo.toISOString() },
+        });
+
+        if (outdatedCheques.length > 0) {
+            console.log("Updating outdated cheques:", outdatedCheques);
+
+            await Promise.all(
+                outdatedCheques.map((cheque) =>
+                    updateChequeRepo(cheque._id, { chequeStatus: "COMPLETED" })
+                )
+            );
+
+            console.log(`${outdatedCheques.length} cheque(s) updated to COMPLETED.`);
+        } else {
+            console.log("No outdated cheques found.");
+        }
+
+        return outdatedCheques.length;
+    } catch (e: any) {
+        console.error("Error updating cheque statuses:", e.message);
+        throw e;
+    }
+};
+
