@@ -10,6 +10,7 @@ const ERROR_MESSAGES = {
     SUPPLIER_ALREADY_EXIST: "Supplier already exists. Please check the phone number.",
     CHEQUE_ALREADY_EXIST: "Cheque already exists by this customer. Please check the cheque number.",
     INVOICE_ALREADY_EXIST: "Invoice already exists by this invoice number. Please check the invoice number.",
+    SALES_RECORD_ALREADY_EXIST: "Sales record already exists by this invoice number. Please check the invoice number.",
     INVALID_CUSTOMER: "Invalid customer. Please check again.",
     INVALID_WAREHOUSE: "Invalid warehouse. Please check again.",
     INVALID_PRODUCT: "Invalid product. Please check again.",

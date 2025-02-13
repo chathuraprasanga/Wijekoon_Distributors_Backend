@@ -4,9 +4,9 @@ import { sendResponse } from "../helpers/sendResponse";
 import jwt from "jsonwebtoken";
 import { findUserByUuidService } from "../services/user.service";
 
-const ACCESS_TOKEN_SECRET: any = process.env.access_secret;
-
 const authMiddleware = async (req: IRequest, res: IResponse, next: NextFunction): Promise<void> => {
+    const ACCESS_TOKEN_SECRET: any = process.env.access_secret;
+
     try {
         const authHeader = req.headers.authorization;
 
