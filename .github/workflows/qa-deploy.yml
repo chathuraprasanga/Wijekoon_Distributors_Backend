@@ -38,7 +38,7 @@ jobs:
       # ✅ Directly Copy `dist` to the VPS
       - name: Copy Backend Build to VPS
         run: |
-          scp -o StrictHostKeyChecking=no backend/backend-dist.tar.gz ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }}:/var/www/qa/qa-wd-server/
+          scp -o StrictHostKeyChecking=no backend-dist.tar.gz ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }}:/var/www/qa/qa-wd-server/
 
       # ✅ Extract and Restart Backend on VPS
       - name: Deploy Backend to VPS
