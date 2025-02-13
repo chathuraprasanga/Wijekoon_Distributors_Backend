@@ -11,9 +11,6 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import errors from "../constants/errors";
 
-const ACCESS_TOKEN_SECRET: any = process.env.access_secret;
-const REFRESH_TOKEN_SECRET: any = process.env.refresh_secret;
-
 export const createUserService = async (data: any) => {
     try {
         const { email, phone } = data;
@@ -70,6 +67,7 @@ export const findUserByUuidService = async (uuid: string) => {
 
 export const userLoginService = async (data: any) => {
     try {
+
         const { emailOrPhone, password } = data;
         if (!emailOrPhone) {
             throw new Error("Email or phone number is required.");
@@ -113,6 +111,8 @@ const findUserByPhoneService = async (phone: any) => {
 };
 
 const generateAccessToken = async (user: any) => {
+    const ACCESS_TOKEN_SECRET: any = process.env.access_secret;
+
     return jwt.sign(
         { username: user.username, uuid: user.uuid }, // Payload
         ACCESS_TOKEN_SECRET, // Secret key
@@ -121,6 +121,8 @@ const generateAccessToken = async (user: any) => {
 };
 
 const generateRefreshToken = async (user: any) => {
+    const REFRESH_TOKEN_SECRET: any = process.env.refresh_secret;
+
     return jwt.sign(
         { username: user.username, uuid: user.uuid }, // Payload
         REFRESH_TOKEN_SECRET, // Secret key
@@ -144,6 +146,8 @@ export const confirmLoginService = async (user: any) => {
 };
 
 export const tokenRefreshService = async (data: any) => {
+    const REFRESH_TOKEN_SECRET: any = process.env.refresh_secret;
+
     try {
         const decoded: any = jwt.verify(
             data.refreshToken,
