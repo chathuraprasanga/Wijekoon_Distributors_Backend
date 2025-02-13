@@ -25,7 +25,6 @@ jobs:
       # ✅ Install dependencies and build backend
       - name: Install dependencies and build backend
         run: |
-          cd backend
           npm install
           npm run build
           tar -czf backend-dist.tar.gz dist
