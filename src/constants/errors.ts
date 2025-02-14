@@ -20,7 +20,8 @@ const ERROR_MESSAGES = {
     INVALID_INVOICE: "Invalid Invoice. Please check again",
     INVALID_CHEQUE_PAYMENT: "Invalid Cheque payment. Please check again",
     INVALID_CHEQUE: "Invalid Cheque, Please check again",
-    USER_DEACTIVATED: "User is deactivated. Please contact the authorities"
+    USER_DEACTIVATED: "User is deactivated. Please contact the authorities",
+    SALES_RECORD_NOT_FOUND:"Sales record is not found"
 };
 
 export default ERROR_MESSAGES;
