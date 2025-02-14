@@ -127,7 +127,6 @@ const getPaymentStatus = async (data: any) => {
         const totalAmount = data.totalAmount || 0;
         const cashAmount = data.cashPayment || 0;
         const chequeAmount = data.chequePayment || 0;
-        const creditAmount = data.creditAmount || 0;
 
         const paidAmount = cashAmount + chequeAmount;
         const outstandingAmount = totalAmount - paidAmount;
@@ -135,10 +134,10 @@ const getPaymentStatus = async (data: any) => {
         if (outstandingAmount === 0) {
             return "PAID"; // Fully paid with cash/cheque
         }
-        if (outstandingAmount === creditAmount) {
+        if (outstandingAmount === totalAmount) {
             return "NOT PAID"; // Entire amount on credit
         }
-        if (outstandingAmount > 0 && creditAmount > 0) {
+        if (outstandingAmount > 0) {
             return "PARTIALLY PAID"; // Some amount is pending in credit
         }
         if (totalAmount === cashAmount) {
@@ -169,7 +168,7 @@ export const getPagedSalesRecordsService = async (data: any) => {
 
         if (searchQuery) {
             matchFilter.$or = [
-                { "customer.name": { $regex: searchQuery, $options: "i" } } // Fixed key notation
+                { "customer.name": { $regex: searchQuery, $options: "i" } }, // Fixed key notation
             ];
         }
 
@@ -195,7 +194,7 @@ export const getPagedSalesRecordsService = async (data: any) => {
     }
 };
 
-    export const findSalesRecordByIdService = async (id: string) => {
+export const findSalesRecordByIdService = async (id: string) => {
     try {
         return await findSalesRecordRepo({ _id: new ObjectId(id) });
     } catch (e: any) {
@@ -206,19 +205,52 @@ export const getPagedSalesRecordsService = async (data: any) => {
 
 export const updateSalesRecordService = async (id: string, data: any) => {
     try {
-        const existSalesRecords = await findSalesRecordsRepo({
-            phone: data.phone,
-        });
-        const duplicateSalesRecords = existSalesRecords.filter(
-            (c: any) => !c._id.equals(new ObjectId(id)) // Use .equals() for ObjectId comparison
-        );
+        console.log("data", data);
+        const salesRecord: any = await findSalesRecordByIdService(id);
 
-        if (duplicateSalesRecords.length > 0) {
-            throw new Error(errors.SALES_RECORD_ALREADY_EXIST);
+        if (!salesRecord) {
+            throw new Error(errors.SALES_RECORD_NOT_FOUND);
         }
 
-        delete data._id;
-        return await updateSalesRecordRepo({ _id: id }, data);
+        const paymentDetails = data.paymentDetails;
+
+        if (paymentDetails?.cheques?.length > 0) {
+            await Promise.all(
+                paymentDetails.cheques.map((c: any) =>
+                    createChequeService({ ...c, customer: data.customer })
+                )
+            );
+        }
+
+        const payload: any = {
+            paymentDetails: {
+                cashPayment:
+                    (salesRecord.paymentDetails?.cashPayment || 0) +
+                    (paymentDetails.cash || 0),
+                chequePayment:
+                    (salesRecord.paymentDetails?.chequePayment || 0) +
+                    (paymentDetails?.cheques?.reduce(
+                        (acc: any, c: any) => acc + c.amount,
+                        0
+                    ) || 0),
+                creditAmount: paymentDetails.credit || 0,
+                isPaymentDone: (paymentDetails.credit || 0) <= 0,
+            },
+            paymentStatus: (paymentDetails.credit || 0) <= 0 ? "PAID" : "PARTIALLY PAID",
+            metadata: {
+                ...salesRecord.metadata,
+                payments: {
+                    cash: (salesRecord.metadata?.payments?.cash || 0) + (paymentDetails.cash || 0),
+                    cheques: [
+                        ...(salesRecord.metadata?.payments?.cheques || []),
+                        ...paymentDetails.cheques,
+                    ],
+                    credit: paymentDetails.credit || 0,
+                },
+            },
+        };
+
+        return await updateSalesRecordRepo({ _id: id }, payload);
     } catch (e: any) {
         console.error(e.message);
         throw e;
