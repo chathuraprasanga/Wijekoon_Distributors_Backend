@@ -1,6 +1,7 @@
 import mongoose, { ObjectId, Schema } from "mongoose";
 import { Customer } from "./customer.model";
 import errors from "../constants/errors";
+import { Warehouse } from "./warehouse.model";
 
 export interface ISalesRecord extends Document {
     orderId: string;
@@ -13,6 +14,7 @@ export interface ISalesRecord extends Document {
     status: boolean;
     metadata: any;
     notes: string;
+    warehouse: ObjectId;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -78,6 +80,17 @@ const SalesRecordSchema: Schema<ISalesRecord> = new Schema<ISalesRecord>(
         },
         notes: {
             type: Schema.Types.String,
+        },
+        warehouse: {
+            type: Schema.Types.ObjectId,
+            ref: "Warehouse",
+            validate: {
+                validator: async function (value: mongoose.Types.ObjectId | null) {
+                    if (!value) return true; // ✅ Allow empty or null value
+                    return Warehouse.exists({ _id: value });
+                },
+                message: errors.INVALID_WAREHOUSE,
+            },
         }
     },
     {

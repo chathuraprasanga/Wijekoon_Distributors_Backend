@@ -1,9 +1,14 @@
 import { findProductsRepo } from "../repositories/product.repository";
 import {
     createWarehouseProductMappingRepo,
-    findWarehouseProductMapping, updateWarehouseProductMapping,
+    findWarehouseProductMapping,
+    findWarehouseProductMappings,
+    updateWarehouseProductMapping,
 } from "../repositories/warehouseProductMapping.repository";
 import { findWarehousesRepo } from "../repositories/warehouse.repository";
+import mongoose from "mongoose";
+
+const ObjectId = mongoose.Types.ObjectId;
 
 export const warehouseProductMappingCreateService = async (warehouse: any) => {
     try {
@@ -41,8 +46,10 @@ export const updateStockService = async (id: any, data: any) => {
     try {
         let masterResponse: any[] = [];
 
-        const productMappingPromise = data.map(async (prod:any) => {
-            const productMapping = await findWarehouseProductMapping({ _id: prod.id });
+        const productMappingPromise = data.map(async (prod: any) => {
+            const productMapping = await findWarehouseProductMapping({
+                _id: prod.id,
+            });
 
             if (!productMapping) {
                 throw new Error(`Product mapping not found for ID: ${prod.id}`);
@@ -66,3 +73,56 @@ export const updateStockService = async (id: any, data: any) => {
     }
 };
 
+export const changeWarehouseStockBySales = async (data: any) => {
+    try {
+        const { products, warehouseId } = data;
+
+        const mappedProducts = await findWarehouseProductMappings({
+            warehouse: new ObjectId(warehouseId),
+        });
+
+        if (!mappedProducts || mappedProducts.length === 0) {
+            console.warn("No products found in warehouse.");
+            return [];
+        }
+
+        if (!products || products.length === 0) {
+            console.warn("No products provided for stock update.");
+            return [];
+        }
+
+        const updatedProducts = mappedProducts.map((p: any) => {
+            const productObj = p.toObject ? p.toObject() : { ...p };
+
+            const soldProduct = products.find((prod: any) => {
+                return productObj._id.toString() === prod.product.mappingId; // Fix: Remove extra `.product`
+            });
+
+            if (soldProduct) {
+                const newCount = (productObj.count || 0) - soldProduct.amount;
+
+                if (newCount < 0) {
+                    console.warn(
+                        `⚠️ Negative stock detected for ${productObj._id.toString()} - Setting count to 0.`
+                    );
+                    return { ...productObj, count: 0 };
+                }
+
+                return { ...productObj, count: newCount };
+            }
+
+            return productObj;
+        });
+
+        for (const updatedProduct of updatedProducts) {
+            await updateWarehouseProductMapping(updatedProduct._id, {
+                count: updatedProduct.count,
+            });
+        }
+
+        return updatedProducts;
+    } catch (e: any) {
+        console.error("Error in changeWarehouseStockBySales:", e.message);
+        throw e;
+    }
+};
