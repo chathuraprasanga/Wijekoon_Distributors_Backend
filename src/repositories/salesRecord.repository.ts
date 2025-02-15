@@ -16,6 +16,7 @@ export const findSalesRecordRepo = (filters: any) => {
     return SalesRecord.findOne(filters)
         .populate("customer") // Populates customer details
         .populate("orderDetails.product") // Populates product details inside orderDetails
+        .populate("warehouse")
         .lean()
         .exec();
 };

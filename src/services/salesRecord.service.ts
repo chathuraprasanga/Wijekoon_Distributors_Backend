@@ -10,11 +10,16 @@ import {
 import mongoose from "mongoose";
 import errors from "../constants/errors";
 import { createChequeService } from "./cheque.service";
+import { changeWarehouseStockBySales } from "./warehouseProductMapping.service";
 
 const ObjectId = mongoose.Types.ObjectId;
 
 export const createSalesRecordService = async (data: any) => {
     try {
+        if (data.isWarehouseSale){
+            await changeWarehouseStockBySales(data);
+        }
+
         const sanitizedData = JSON.parse(JSON.stringify(data));
         sanitizedData.metadata = { ...sanitizedData };
 
@@ -29,6 +34,7 @@ export const createSalesRecordService = async (data: any) => {
         sanitizedData.paymentStatus = await getPaymentStatus(
             sanitizedData.paymentDetails
         );
+        sanitizedData.warehouse = data.warehouseId;
 
         return await createSalesRecordRepo(sanitizedData);
     } catch (e: any) {
@@ -205,52 +211,82 @@ export const findSalesRecordByIdService = async (id: string) => {
 
 export const updateSalesRecordService = async (id: string, data: any) => {
     try {
-        console.log("data", data);
         const salesRecord: any = await findSalesRecordByIdService(id);
 
         if (!salesRecord) {
             throw new Error(errors.SALES_RECORD_NOT_FOUND);
         }
 
-        const paymentDetails = data.paymentDetails;
+        if (data?.isUpdatePayments) {
+            const paymentDetails = data.paymentDetails;
 
-        if (paymentDetails?.cheques?.length > 0) {
-            await Promise.all(
-                paymentDetails.cheques.map((c: any) =>
-                    createChequeService({ ...c, customer: data.customer })
-                )
-            );
-        }
+            if (paymentDetails?.cheques?.length > 0) {
+                await Promise.all(
+                    paymentDetails.cheques.map((c: any) =>
+                        createChequeService({ ...c, customer: data.customer })
+                    )
+                );
+            }
 
-        const payload: any = {
-            paymentDetails: {
-                cashPayment:
-                    (salesRecord.paymentDetails?.cashPayment || 0) +
-                    (paymentDetails.cash || 0),
-                chequePayment:
-                    (salesRecord.paymentDetails?.chequePayment || 0) +
-                    (paymentDetails?.cheques?.reduce(
-                        (acc: any, c: any) => acc + c.amount,
-                        0
-                    ) || 0),
-                creditAmount: paymentDetails.credit || 0,
-                isPaymentDone: (paymentDetails.credit || 0) <= 0,
-            },
-            paymentStatus: (paymentDetails.credit || 0) <= 0 ? "PAID" : "PARTIALLY PAID",
-            metadata: {
-                ...salesRecord.metadata,
-                payments: {
-                    cash: (salesRecord.metadata?.payments?.cash || 0) + (paymentDetails.cash || 0),
-                    cheques: [
-                        ...(salesRecord.metadata?.payments?.cheques || []),
-                        ...paymentDetails.cheques,
-                    ],
-                    credit: paymentDetails.credit || 0,
+            const payload: any = {
+                paymentDetails: {
+                    cashPayment:
+                        (salesRecord.paymentDetails?.cashPayment || 0) +
+                        (paymentDetails.cash || 0),
+                    chequePayment:
+                        (salesRecord.paymentDetails?.chequePayment || 0) +
+                        (paymentDetails?.cheques?.reduce(
+                            (acc: any, c: any) => acc + c.amount,
+                            0
+                        ) || 0),
+                    creditAmount: paymentDetails.credit || 0,
+                    isPaymentDone: (paymentDetails.credit || 0) <= 0,
                 },
-            },
-        };
+                paymentStatus:
+                    (paymentDetails.credit || 0) <= 0
+                        ? "PAID"
+                        : "PARTIALLY PAID",
+                metadata: {
+                    ...salesRecord.metadata,
+                    payments: {
+                        cash:
+                            (salesRecord.metadata?.payments?.cash || 0) +
+                            (paymentDetails.cash || 0),
+                        cheques: [
+                            ...(salesRecord.metadata?.payments?.cheques || []),
+                            ...paymentDetails.cheques,
+                        ],
+                        credit: paymentDetails.credit || 0,
+                    },
+                },
+            };
 
-        return await updateSalesRecordRepo({ _id: id }, payload);
+            return await updateSalesRecordRepo({ _id: id }, payload);
+        } else {
+            const payload = {
+                amountDetails: {
+                    subTotal: data.subTotal,
+                    discount: data.discount,
+                    tax: data.tax,
+                    netTotal: data.netTotal,
+                },
+                customer: data.customer,
+                date: data.date,
+                notes:data.notes,
+                metadata: {
+                    customer: data.customer,
+                    date: data.date,
+                    notes:data.notes,
+                    subTotal: data.subTotal,
+                    discount: data.discount,
+                    tax: data.tax,
+                    netTotal: data.netTotal,
+                    products: data.products,
+                }
+            }
+
+            return await updateSalesRecordRepo({ _id: id }, payload);
+        }
     } catch (e: any) {
         console.error(e.message);
         throw e;
