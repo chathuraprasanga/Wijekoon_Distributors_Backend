@@ -10,11 +10,16 @@ import {
 import mongoose from "mongoose";
 import errors from "../constants/errors";
 import { createChequeService } from "./cheque.service";
+import { changeWarehouseStockBySales } from "./warehouseProductMapping.service";
 
 const ObjectId = mongoose.Types.ObjectId;
 
 export const createSalesRecordService = async (data: any) => {
     try {
+        if (data.isWarehouseSale){
+            await changeWarehouseStockBySales(data);
+        }
+
         const sanitizedData = JSON.parse(JSON.stringify(data));
         sanitizedData.metadata = { ...sanitizedData };
 
@@ -29,6 +34,7 @@ export const createSalesRecordService = async (data: any) => {
         sanitizedData.paymentStatus = await getPaymentStatus(
             sanitizedData.paymentDetails
         );
+        sanitizedData.warehouse = data.warehouseId;
 
         return await createSalesRecordRepo(sanitizedData);
     } catch (e: any) {
