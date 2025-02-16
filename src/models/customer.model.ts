@@ -18,8 +18,8 @@ const CustomerSchema: Schema = new Schema<ICustomer>(
         },
         phone: {
             type: Schema.Types.String,
-            required: [true, "Customer phone number is required"],
-            unique: true,
+            // required: [true, "Customer phone number is required"],
+            // unique: true,
         },
         email: {
             type: Schema.Types.String,
