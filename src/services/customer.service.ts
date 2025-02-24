@@ -14,14 +14,18 @@ const ObjectId = mongoose.Types.ObjectId;
 export const createCustomerService = async (data: any) => {
     try {
         const { phone, email } = data;
-        const customerByPhone = await findCustomerByPhoneService(phone);
-        if (customerByPhone) {
-            throw new Error(errors.CUSTOMER_ALREADY_EXIST);
+
+        if (phone && phone.trim() !== "") {
+            const customerByPhone = await findCustomerByPhoneService(phone);
+            if (customerByPhone) {
+                throw new Error(errors.CUSTOMER_ALREADY_EXIST);
+            }
         }
+
+        data.phone = data.phone ?? null;
+
         const customersByEmail: any[] = await findCustomerByEmailService(email);
-        const duplicateCustomers = customersByEmail.filter(
-            (c) => c.email !== ""
-        );
+        const duplicateCustomers = customersByEmail.filter(c => c.email !== "");
         if (duplicateCustomers.length > 0) {
             throw new Error(errors.EMAIL_IS_ALREADY_AVAILABLE);
         }

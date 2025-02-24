@@ -18,8 +18,9 @@ const CustomerSchema: Schema = new Schema<ICustomer>(
         },
         phone: {
             type: Schema.Types.String,
+            set: (v: string | null) => (v === "" ? null : v), // Convert empty string to null
             // required: [true, "Customer phone number is required"],
-            // unique: true,
+            // unique: false,
         },
         email: {
             type: Schema.Types.String,
