@@ -5,6 +5,7 @@ export interface ICustomer extends Document {
     phone: string;
     email: string;
     address: string;
+    creditAmount: number;
     status: boolean;
     createdAt: Date;
     updatedAt: Date;
@@ -26,6 +27,10 @@ const CustomerSchema: Schema = new Schema<ICustomer>(
         },
         address: {
             type: Schema.Types.String,
+        },
+        creditAmount: {
+            type: Schema.Types.Number,
+            default: 0,
         },
         status: {
             type: Schema.Types.Boolean,

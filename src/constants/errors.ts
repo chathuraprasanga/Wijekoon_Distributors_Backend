@@ -21,7 +21,8 @@ const ERROR_MESSAGES = {
     INVALID_CHEQUE_PAYMENT: "Invalid Cheque payment. Please check again",
     INVALID_CHEQUE: "Invalid Cheque, Please check again",
     USER_DEACTIVATED: "User is deactivated. Please contact the authorities",
-    SALES_RECORD_NOT_FOUND:"Sales record is not found"
+    SALES_RECORD_NOT_FOUND: "Sales record is not found",
+    ORDER_NOT_FOUND: "Order is not found",
 };
 
 export default ERROR_MESSAGES;
