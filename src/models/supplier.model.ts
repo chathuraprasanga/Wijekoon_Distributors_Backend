@@ -6,6 +6,7 @@ export interface ISupplier extends Document {
     email: string;
     address: string;
     status: boolean;
+    creditAmount: number;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -26,6 +27,10 @@ const SupplierSchema: Schema = new Schema<ISupplier>(
         },
         address: {
             type: Schema.Types.String,
+        },
+        creditAmount: {
+            type: Schema.Types.Number,
+            default: 0,
         },
         status: {
             type: Schema.Types.Boolean,
