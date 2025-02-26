@@ -66,14 +66,14 @@ export const findCustomerByIdService = async (id: string) => {
 
 export const updateCustomerService = async (id: any, data: any) => {
     try {
-        // const existCustomers = await findCustomersRepo({ phone: data.phone });
-        // const duplicateCustomers = existCustomers.filter(
-        //     (c: any) => !c._id.equals(new ObjectId(id)) // Use .equals() for ObjectId comparison
-        // );
-        //
-        // if (duplicateCustomers.length > 0) {
-        //     throw new Error(errors.CUSTOMER_ALREADY_EXIST);
-        // }
+        const existCustomers = await findCustomersRepo({ phone: data.phone });
+        const duplicateCustomers = existCustomers.filter(
+            (c: any) => !c._id.equals(new ObjectId(id)) // Use .equals() for ObjectId comparison
+        );
+
+        if (duplicateCustomers.length > 0) {
+            throw new Error(errors.CUSTOMER_ALREADY_EXIST);
+        }
 
         delete data._id;
         return await updateCustomerRepo({ _id: new ObjectId(id) }, data);
