@@ -104,24 +104,12 @@ export const updateOrderService = async (id: string, data: any) => {
         }
 
         const payload = {
-            amountDetails: {
-                subTotal: data.subTotal,
-                discount: data.discount,
-                tax: data.tax,
-                netTotal: data.netTotal,
-            },
             customer: data.customer,
-            date: data.date,
+            expectedDate: data.expectedDate,
             notes: data.notes,
+            orderDetails: data.products,
             metadata: {
-                customer: data.customer,
-                date: data.date,
-                notes: data.notes,
-                subTotal: data.subTotal,
-                discount: data.discount,
-                tax: data.tax,
-                netTotal: data.netTotal,
-                products: data.products,
+                ...data
             }
         };
 

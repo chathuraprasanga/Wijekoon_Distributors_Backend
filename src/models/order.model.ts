@@ -10,6 +10,7 @@ export interface IOrder extends Document {
     orderStatus: string;
     status: boolean;
     notes: string;
+    metadata: any;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -58,6 +59,9 @@ const OrderSchema: Schema<IOrder> = new Schema<IOrder>(
         },
         notes: {
             type: Schema.Types.String,
+        },
+        metadata: {
+            type: Schema.Types.Mixed,
         },
     },
     {
