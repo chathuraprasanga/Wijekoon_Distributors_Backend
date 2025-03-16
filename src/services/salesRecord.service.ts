@@ -11,12 +11,14 @@ import mongoose from "mongoose";
 import errors from "../constants/errors";
 import { createChequeService } from "./cheque.service";
 import { changeWarehouseStockBySales } from "./warehouseProductMapping.service";
+import { updateCustomerCredit } from "./customer.service";
+import { CALCULATION_TYPES } from "../constants/settings";
 
 const ObjectId = mongoose.Types.ObjectId;
 
 export const createSalesRecordService = async (data: any) => {
     try {
-        if (data.isWarehouseSale){
+        if (data.isWarehouseSale) {
             await changeWarehouseStockBySales(data);
         }
 
@@ -35,6 +37,14 @@ export const createSalesRecordService = async (data: any) => {
             sanitizedData.paymentDetails
         );
         sanitizedData.warehouse = data.warehouseId;
+
+        await updateCustomerCredit(
+            {
+                customer: sanitizedData.customer,
+                amount: sanitizedData.paymentDetails.creditAmount,
+            },
+            CALCULATION_TYPES.INCREMENT
+        );
 
         return await createSalesRecordRepo(sanitizedData);
     } catch (e: any) {
@@ -261,6 +271,16 @@ export const updateSalesRecordService = async (id: string, data: any) => {
                 },
             };
 
+            await updateCustomerCredit(
+                {
+                    amount:
+                        payload.paymentDetails.cashPayment +
+                        payload.paymentDetails.chequePayment,
+                    customer: salesRecord.customer,
+                },
+                CALCULATION_TYPES.DECREMENT
+            );
+
             return await updateSalesRecordRepo({ _id: id }, payload);
         } else {
             const payload = {
@@ -272,18 +292,18 @@ export const updateSalesRecordService = async (id: string, data: any) => {
                 },
                 customer: data.customer,
                 date: data.date,
-                notes:data.notes,
+                notes: data.notes,
                 metadata: {
                     customer: data.customer,
                     date: data.date,
-                    notes:data.notes,
+                    notes: data.notes,
                     subTotal: data.subTotal,
                     discount: data.discount,
                     tax: data.tax,
                     netTotal: data.netTotal,
                     products: data.products,
-                }
-            }
+                },
+            };
 
             return await updateSalesRecordRepo({ _id: id }, payload);
         }
