@@ -10,13 +10,18 @@ const bankDetailRoute = Router();
 
 bankDetailRoute.post(
     "/bank-details",
-    authMiddleware,
+    authMiddleware([]),
     getAllBankAccountsController
-);bankDetailRoute.post(
+);
+bankDetailRoute.post(
     "/bank-detail",
-    authMiddleware,
+    authMiddleware([]),
     createBankAccountController
 );
-bankDetailRoute.put("/change-status/:id", authMiddleware, bankDetailStatusChangeController)
+bankDetailRoute.put(
+    "/change-status/:id",
+    authMiddleware([]),
+    bankDetailStatusChangeController
+);
 
 export default bankDetailRoute;

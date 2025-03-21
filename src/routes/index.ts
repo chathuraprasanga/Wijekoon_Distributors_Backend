@@ -10,6 +10,9 @@ import bankDetailRoute from "./bankDetail.route";
 import chequePaymentRoute from "./chequePayment.route";
 import warehouseRoute from "./warehouse.route";
 import salesRecordRoute from "./salesRecord.route";
+import orderRoute from "./order.route";
+
+import publicRoute from "./public.route";
 
 const routes = Router();
 
@@ -24,5 +27,8 @@ routes.use("/bank-details", bankDetailRoute);
 routes.use("/cheque-payment", chequePaymentRoute);
 routes.use("/warehouses", warehouseRoute);
 routes.use("/sales-records", salesRecordRoute);
+routes.use("/orders", orderRoute);
+
+routes.use("/public", publicRoute);
 
 export default routes;

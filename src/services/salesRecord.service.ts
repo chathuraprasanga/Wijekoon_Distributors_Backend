@@ -11,34 +11,38 @@ import mongoose from "mongoose";
 import errors from "../constants/errors";
 import { createChequeService } from "./cheque.service";
 import { changeWarehouseStockBySales } from "./warehouseProductMapping.service";
+import {
+    findCustomerByIdService,
+    updateCustomerCredit,
+} from "./customer.service";
+import { CALCULATION_TYPES } from "../constants/settings";
 
 const ObjectId = mongoose.Types.ObjectId;
 
 export const createSalesRecordService = async (data: any) => {
     try {
-        if (data.isWarehouseSale){
+        if (data.isWarehouseSale) {
             await changeWarehouseStockBySales(data);
         }
+        data.orderId = await generateOrderId();
+        data.orderDetails = await generateOrderDetails(data.products);
+        data.amountDetails = await generateAmountDetails(data);
+        data.paymentDetails = await generatePaymentDetails(data);
+        data.paymentStatus = await getPaymentStatus(data.paymentDetails);
+        data.warehouse = data.warehouseId;
+        data.customer = await findCustomerByIdService(data.customer);
 
-        const sanitizedData = JSON.parse(JSON.stringify(data));
-        sanitizedData.metadata = { ...sanitizedData };
-
-        sanitizedData.orderId = await generateOrderId();
-        sanitizedData.orderDetails = await generateOrderDetails(
-            sanitizedData.products
+        await updateCustomerCredit(
+            {
+                customer: data.customer,
+                amount: data.paymentDetails.creditAmount,
+            },
+            CALCULATION_TYPES.INCREMENT
         );
-        sanitizedData.amountDetails =
-            await generateAmountDetails(sanitizedData);
-        sanitizedData.paymentDetails =
-            await generatePaymentDetails(sanitizedData);
-        sanitizedData.paymentStatus = await getPaymentStatus(
-            sanitizedData.paymentDetails
-        );
-        sanitizedData.warehouse = data.warehouseId;
 
-        return await createSalesRecordRepo(sanitizedData);
+        return await createSalesRecordRepo(data);
     } catch (e: any) {
-        console.error("ERROR:", e.message);
+        console.error(e.message);
         throw e;
     }
 };
@@ -123,7 +127,7 @@ const generatePaymentDetails = async (data: any) => {
             isPaymentDone: creditAmount === 0,
         };
     } catch (e: any) {
-        console.error("Error in generatePaymentDetails:", e.message);
+        console.error(e.message);
         throw e;
     }
 };
@@ -230,6 +234,7 @@ export const updateSalesRecordService = async (id: string, data: any) => {
 
             const payload: any = {
                 paymentDetails: {
+                    ...salesRecord.paymentDetails,
                     cashPayment:
                         (salesRecord.paymentDetails?.cashPayment || 0) +
                         (paymentDetails.cash || 0),
@@ -261,7 +266,20 @@ export const updateSalesRecordService = async (id: string, data: any) => {
                 },
             };
 
-            return await updateSalesRecordRepo({ _id: id }, payload);
+            await updateCustomerCredit(
+                {
+                    amount:
+                        payload.paymentDetails.cashPayment +
+                        payload.paymentDetails.chequePayment,
+                    customer: salesRecord.customer,
+                },
+                CALCULATION_TYPES.DECREMENT
+            );
+
+            return await updateSalesRecordRepo(
+                { _id: new ObjectId(id) },
+                payload
+            );
         } else {
             const payload = {
                 amountDetails: {
@@ -272,20 +290,22 @@ export const updateSalesRecordService = async (id: string, data: any) => {
                 },
                 customer: data.customer,
                 date: data.date,
-                notes:data.notes,
+                notes: data.notes,
                 metadata: {
                     customer: data.customer,
                     date: data.date,
-                    notes:data.notes,
+                    notes: data.notes,
                     subTotal: data.subTotal,
                     discount: data.discount,
                     tax: data.tax,
                     netTotal: data.netTotal,
                     products: data.products,
-                }
-            }
-
-            return await updateSalesRecordRepo({ _id: id }, payload);
+                },
+            };
+            return await updateSalesRecordRepo(
+                { _id: new ObjectId(id) },
+                payload
+            );
         }
     } catch (e: any) {
         console.error(e.message);

@@ -14,33 +14,33 @@ import {
 
 const invoiceRoute = Router();
 
-invoiceRoute.post("/invoice", authMiddleware, createInvoiceController);
-invoiceRoute.post("/invoices", authMiddleware, getAllInvoiceController);
+invoiceRoute.post("/invoice", authMiddleware([]), createInvoiceController);
+invoiceRoute.post("/invoices", authMiddleware([]), getAllInvoiceController);
 invoiceRoute.post(
     "/paged-invoices",
-    authMiddleware,
+    authMiddleware([]),
     getPagedInvoicesController
 );
-invoiceRoute.get("/invoice/:id", authMiddleware, getInvoiceController);
-invoiceRoute.put("/invoice/:id", authMiddleware, updateInvoiceController);
+invoiceRoute.get("/invoice/:id", authMiddleware([]), getInvoiceController);
+invoiceRoute.put("/invoice/:id", authMiddleware([]), updateInvoiceController);
 invoiceRoute.put(
     "/change-status/:id",
-    authMiddleware,
+    authMiddleware([]),
     invoiceStatusChangeController
 );
 invoiceRoute.post(
     "/bulk-invoice-payment",
-    authMiddleware,
+    authMiddleware([]),
     createBulkInvoicePaymentController
 );
 invoiceRoute.post(
     "/paged-bulk-invoice-payments",
-    authMiddleware,
+    authMiddleware([]),
     getPagedBulkInvoicePaymentsController
 );
 invoiceRoute.get(
     "/bulk-invoice-payment/:id",
-    authMiddleware,
+    authMiddleware([]),
     getBulkInvoicePaymentController
 );
 
