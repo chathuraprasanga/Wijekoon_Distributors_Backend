@@ -14,9 +14,13 @@ publicRoute.post("/send-email", async (req: Request, res: Response):Promise<any>
         const transporter = nodemailer.createTransport({
             host: process.env.ZOHO_HOST,
             port: Number(process.env.ZOHO_PORT),
+            secure: false,
             auth: {
                 user: process.env.ZOHO_USER,
                 pass: process.env.ZOHO_PASS,
+            },
+            tls: {
+                rejectUnauthorized: false, // Temporary fix for SSL
             },
         });
 
