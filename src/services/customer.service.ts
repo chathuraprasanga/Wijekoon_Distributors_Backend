@@ -50,8 +50,7 @@ const findCustomerByPhoneService = async (phone: string) => {
 export const findAllCustomersService = async (data: any) => {
     try {
         const filters = data.filters;
-        console.log(filters);
-        return await findCustomersRepo({});
+        return await findCustomersRepo(filters);
     } catch (e: any) {
         console.error(e.message);
         throw e;
@@ -133,8 +132,7 @@ export const getPagedCustomersService = async (data: any) => {
 export const updateCustomerCredit = async (data: any, type: string) => {
     try {
         const { amount, customer } = data;
-        console.log("data", data);
-        const selectedCustomer = await findCustomerByIdService(customer);
+        const selectedCustomer = await findCustomerByIdService(customer._id);
 
         if (!selectedCustomer) {
             throw new Error(errors.INVALID_CUSTOMER);
@@ -142,16 +140,14 @@ export const updateCustomerCredit = async (data: any, type: string) => {
 
         let credit: number;
         if (type === CALCULATION_TYPES.INCREMENT) {
-            credit =
-                selectedCustomer.creditAmount + amount;
+            credit = selectedCustomer.creditAmount + amount;
         } else if (type === CALCULATION_TYPES.DECREMENT) {
-            credit =
-                selectedCustomer.creditAmount - amount;
+            credit = selectedCustomer.creditAmount - amount;
         } else {
             throw new Error(`Invalid calculation type: ${type}`);
         }
 
-        return updateCustomerRepo(new ObjectId(customer), {
+        return updateCustomerRepo(new ObjectId(customer._id), {
             creditAmount: credit,
         });
     } catch (error: any) {
