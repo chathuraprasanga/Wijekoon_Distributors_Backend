@@ -8,6 +8,7 @@ import {
 } from "../repositories/customer.repository";
 import mongoose from "mongoose";
 import errors from "../constants/errors";
+import { CALCULATION_TYPES } from "../constants/settings";
 
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -25,7 +26,9 @@ export const createCustomerService = async (data: any) => {
         data.phone = data.phone ?? null;
 
         const customersByEmail: any[] = await findCustomerByEmailService(email);
-        const duplicateCustomers = customersByEmail.filter(c => c.email !== "");
+        const duplicateCustomers = customersByEmail.filter(
+            (c) => c.email !== ""
+        );
         if (duplicateCustomers.length > 0) {
             throw new Error(errors.EMAIL_IS_ALREADY_AVAILABLE);
         }
@@ -47,8 +50,7 @@ const findCustomerByPhoneService = async (phone: string) => {
 export const findAllCustomersService = async (data: any) => {
     try {
         const filters = data.filters;
-        console.log(filters);
-        return await findCustomersRepo({});
+        return await findCustomersRepo(filters);
     } catch (e: any) {
         console.error(e.message);
         throw e;
@@ -102,7 +104,7 @@ export const getPagedCustomersService = async (data: any) => {
             matchFilter.$or = [
                 { name: { $regex: searchQuery, $options: "i" } },
                 { email: { $regex: searchQuery, $options: "i" } },
-                { phone: { $regex: searchQuery, $options: "i" } }
+                { phone: { $regex: searchQuery, $options: "i" } },
             ];
         }
 
@@ -124,5 +126,32 @@ export const getPagedCustomersService = async (data: any) => {
     } catch (e: any) {
         console.error(e.message);
         throw e;
+    }
+};
+
+export const updateCustomerCredit = async (data: any, type: string) => {
+    try {
+        const { amount, customer } = data;
+        const selectedCustomer = await findCustomerByIdService(customer._id);
+
+        if (!selectedCustomer) {
+            throw new Error(errors.INVALID_CUSTOMER);
+        }
+
+        let credit: number;
+        if (type === CALCULATION_TYPES.INCREMENT) {
+            credit = selectedCustomer.creditAmount + amount;
+        } else if (type === CALCULATION_TYPES.DECREMENT) {
+            credit = selectedCustomer.creditAmount - amount;
+        } else {
+            throw new Error(`Invalid calculation type: ${type}`);
+        }
+
+        return updateCustomerRepo(new ObjectId(customer._id), {
+            creditAmount: credit,
+        });
+    } catch (error: any) {
+        console.error(error.message);
+        throw error;
     }
 };

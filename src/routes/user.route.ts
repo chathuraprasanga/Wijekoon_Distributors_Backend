@@ -6,15 +6,16 @@ import {
     signupController, tokenRefreshController, userStatusChangeController,
 } from "../controllers/user.controller";
 import authMiddleware from "../middlewares/auth.middleware";
+import { USER_ROLES } from "../constants/settings";
 
 const userRoute = Router();
 
 userRoute.post("/signup", signupController);
 userRoute.post("/login", loginService);
-userRoute.get("/confirm-login", authMiddleware, confirmLoginController);
+userRoute.get("/confirm-login", authMiddleware([]), confirmLoginController);
 userRoute.post("/token-refresh", tokenRefreshController);
-userRoute.post("/change-password",authMiddleware, changePasswordController);
-userRoute.post("/users",authMiddleware, getAllUsersController);
-userRoute.put("/change-status/:id", authMiddleware, userStatusChangeController)
+userRoute.post("/change-password",authMiddleware([]), changePasswordController);
+userRoute.post("/users",authMiddleware([USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN]), getAllUsersController);
+userRoute.put("/change-status/:id", authMiddleware([]), userStatusChangeController)
 
 export default userRoute;
