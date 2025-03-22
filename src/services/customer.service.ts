@@ -132,6 +132,7 @@ export const getPagedCustomersService = async (data: any) => {
 export const updateCustomerCredit = async (data: any, type: string) => {
     try {
         const { amount, customer } = data;
+
         const selectedCustomer = await findCustomerByIdService(customer._id);
 
         if (!selectedCustomer) {

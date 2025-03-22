@@ -25,7 +25,7 @@ export const createChequeService = async (data: any) => {
         }
         const customer:any = await findCustomerByIdService(data.customer);
 
-        if(customer.creditAmount > 0) {
+        if(customer.creditAmount > 0 && !data.salesRecordUpdate) {
             await updateCustomerCredit({...data,customer: customer}, CALCULATION_TYPES.DECREMENT);
         }
         return await createChequeRepo(data);
