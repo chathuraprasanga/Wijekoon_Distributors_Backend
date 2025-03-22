@@ -26,7 +26,7 @@ export const signupController = async (
             500,
             "Internal server error",
             null,
-            "User signup failed"
+            error.message
         );
     }
 };
