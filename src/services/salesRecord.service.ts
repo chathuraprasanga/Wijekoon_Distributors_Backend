@@ -31,6 +31,7 @@ export const createSalesRecordService = async (data: any) => {
         data.paymentStatus = await getPaymentStatus(data.paymentDetails);
         data.warehouse = data.warehouseId;
         data.customer = await findCustomerByIdService(data.customer);
+        data.metadata = { ...data };
 
         await updateCustomerCredit(
             {

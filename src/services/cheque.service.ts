@@ -9,6 +9,8 @@ import {
 } from "../repositories/cheque.repository";
 import errors from "../constants/errors";
 import mongoose from "mongoose";
+import { findCustomerByIdService, updateCustomerCredit } from "./customer.service";
+import { CALCULATION_TYPES } from "../constants/settings";
 
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -20,6 +22,11 @@ export const createChequeService = async (data: any) => {
         });
         if (duplicateCheque) {
             throw new Error(`${data.number} ${errors.CHEQUE_ALREADY_EXIST}`);
+        }
+        const customer:any = await findCustomerByIdService(data.customer);
+
+        if(customer.creditAmount > 0) {
+            await updateCustomerCredit({...data,customer: customer}, CALCULATION_TYPES.DECREMENT);
         }
         return await createChequeRepo(data);
     } catch (e: any) {
