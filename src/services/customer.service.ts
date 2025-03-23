@@ -9,6 +9,9 @@ import {
 import mongoose from "mongoose";
 import errors from "../constants/errors";
 import { CALCULATION_TYPES } from "../constants/settings";
+import { aggregateOrderRepo } from "../repositories/order.repository";
+import { aggregateSalesRecordRepo } from "../repositories/salesRecord.repository";
+import { aggregateChequeRepo } from "../repositories/cheque.repository";
 
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -87,6 +90,54 @@ export const updateCustomerService = async (id: any, data: any) => {
 
 export const changeStatusCustomerService = async (id: string, data: any) => {
     try {
+        if (!data.status) {
+            const customer:any  = await findCustomerByIdService(id);
+            if (customer.creditAmount > 0) {
+                throw new Error(errors.CUSTOMER_CANNOT_BE_DELETED_BCZ_CREDIT)
+            }
+            const poSearchPipeline = [
+                {
+                    $match: {
+                        customer: new ObjectId(id),
+                        orderStatus: {
+                            $ne: "COMPLETE",
+                        },
+                    },
+                },
+            ];
+            const srSearchPipeline = [
+                {
+                    $match: {
+                        customer: new ObjectId(id),
+                        paymentStatus: {
+                            $ne: "PAID",
+                        },
+                    },
+                },
+            ];
+            const chqSearchPipeline = [
+                {
+                    $match: {
+                        customer: new ObjectId(id),
+                        chequeStatus: {
+                            $ne: "COMPLETED",
+                        },
+                    },
+                },
+            ];
+            const existingPO = await aggregateOrderRepo(poSearchPipeline);
+            const existingSR = await aggregateSalesRecordRepo(srSearchPipeline);
+            const existingCHQ = await aggregateChequeRepo(chqSearchPipeline);
+            if (existingPO.length !== 0) {
+                throw new Error(errors.CUSTOMER_CANNOT_BE_DELETED_BCZ_PO);
+            }
+            if (existingSR.length !== 0) {
+                throw new Error(errors.CUSTOMER_CANNOT_BE_DELETED_BCZ_SR);
+            }
+            if (existingCHQ.length !== 0) {
+                throw new Error(errors.CUSTOMER_CANNOT_BE_DELETED_BCZ_CHQ);
+            }
+        }
         return await updateCustomerRepo({ _id: id }, { status: data.status });
     } catch (e: any) {
         console.error(e.message);
