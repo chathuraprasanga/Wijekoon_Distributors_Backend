@@ -16,6 +16,7 @@ import {
     updateCustomerCredit,
 } from "./customer.service";
 import { CALCULATION_TYPES } from "../constants/settings";
+import { changeStatusOrderService } from "./order.service";
 
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -23,6 +24,11 @@ export const createSalesRecordService = async (data: any) => {
     try {
         if (data.isWarehouseSale) {
             await changeWarehouseStockBySales(data);
+        }
+        if (data.isOrdered) {
+            await changeStatusOrderService(data.orderId, {
+                orderStatus: "COMPLETE",
+            });
         }
         data.orderId = await generateOrderId();
         data.orderDetails = await generateOrderDetails(data.products);
@@ -228,7 +234,11 @@ export const updateSalesRecordService = async (id: string, data: any) => {
             if (paymentDetails?.cheques?.length > 0) {
                 await Promise.all(
                     paymentDetails.cheques.map((c: any) =>
-                        createChequeService({ ...c, customer: data.customer })
+                        createChequeService({
+                            ...c,
+                            customer: data.customer,
+                            salesRecordUpdate: true,
+                        })
                     )
                 );
             }
@@ -270,8 +280,10 @@ export const updateSalesRecordService = async (id: string, data: any) => {
             await updateCustomerCredit(
                 {
                     amount:
-                        payload.paymentDetails.cashPayment +
-                        payload.paymentDetails.chequePayment,
+                        data.paymentDetails.cheques.reduce(
+                            (acc: number, c: any) => acc + c.amount,
+                            0
+                        ) + data.paymentDetails.cash,
                     customer: salesRecord.customer,
                 },
                 CALCULATION_TYPES.DECREMENT

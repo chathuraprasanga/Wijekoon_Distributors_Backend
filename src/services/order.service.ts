@@ -56,9 +56,9 @@ const generateOrderId = async () => {
             const orderIdNumber = parseInt(orderId.split("-")[2]);
 
             const newOrderIdNumber = orderIdNumber + 1;
-            return `W-O-${String(newOrderIdNumber).padStart(4, "0")}`;
+            return `W-PO-${String(newOrderIdNumber).padStart(4, "0")}`;
         } else {
-            return "W-O-0001";
+            return "W-PO-0001";
         }
     } catch (e: any) {
         console.error(e.message);
@@ -124,7 +124,7 @@ export const changeStatusOrderService = async (id: string, data: any) => {
     try {
         return await updateOrderRepo(
             { _id: id },
-            { status: data.status }
+            { orderStatus: data.orderStatus }
         );
     } catch (e: any) {
         console.error(e.message);
