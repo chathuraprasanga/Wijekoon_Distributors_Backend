@@ -23,6 +23,10 @@ const ERROR_MESSAGES = {
     USER_DEACTIVATED: "User is deactivated. Please contact the authorities",
     SALES_RECORD_NOT_FOUND: "Sales record is not found",
     ORDER_NOT_FOUND: "Order is not found",
+    CUSTOMER_CANNOT_BE_DELETED_BCZ_PO: "Customer cannot be deleted, because of uncompleted purchase orders",
+    CUSTOMER_CANNOT_BE_DELETED_BCZ_SR: "Customer cannot be deleted, because of uncompleted sales records",
+    CUSTOMER_CANNOT_BE_DELETED_BCZ_CHQ: "Customer cannot be deleted, because of uncompleted cheques",
+    CUSTOMER_CANNOT_BE_DELETED_BCZ_CREDIT: "Customer cannot be deleted, because of credit",
 };
 
 export default ERROR_MESSAGES;
