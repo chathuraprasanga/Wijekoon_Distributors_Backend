@@ -30,13 +30,13 @@ export const createSalesRecordService = async (data: any) => {
                 orderStatus: "COMPLETE",
             });
         }
+        data.customer = await findCustomerByIdService(data.customer);
         data.orderId = await generateOrderId();
         data.orderDetails = await generateOrderDetails(data.products);
         data.amountDetails = await generateAmountDetails(data);
         data.paymentDetails = await generatePaymentDetails(data);
         data.paymentStatus = await getPaymentStatus(data.paymentDetails);
         data.warehouse = data.warehouseId;
-        data.customer = await findCustomerByIdService(data.customer);
         data.metadata = { ...data };
 
         await updateCustomerCredit(
@@ -344,6 +344,80 @@ export const findSalesRecordsService = async (data: any) => {
         return await findSalesRecordsRepo(filters);
     } catch (e: any) {
         console.error(e.message);
+        throw e;
+    }
+};
+
+export const reduceBySalesRecords = async (data: any) => {
+    try {
+        const salesRecords = await findSalesRecordsRepo({
+            customer: new ObjectId(data.customer_id || data.customer),
+            paymentStatus: { $in: ["NOT PAID", "PARTIALLY PAID"] },
+        });
+
+        let remainingAmount = data.amount;
+
+        const updatedSalesRecords = salesRecords.map((sr: any) => {
+            if (remainingAmount <= 0) return sr;
+
+            const paymentDetails = sr.paymentDetails;
+            const metadata = sr.metadata;
+
+            metadata.payments = metadata.payments || {};
+            metadata.paymentDetails = metadata.paymentDetails || {};
+
+            if (paymentDetails.creditAmount <= remainingAmount) {
+                const paidAmount = paymentDetails.creditAmount;
+                remainingAmount -= paidAmount;
+
+                paymentDetails.creditAmount = 0;
+                paymentDetails.chequePayment = (paymentDetails.chequePayment || 0) + paidAmount;
+                paymentDetails.isPaymentDone = true;
+                sr.paymentStatus = "PAID";
+                metadata.paymentStatus = "PAID";
+
+                const currentCheques = metadata.payments.cheques || [];
+                metadata.payments = {
+                    ...metadata.payments,
+                    cheques: [...currentCheques, data],
+                    credit: 0,
+                };
+
+                metadata.paymentDetails = {
+                    ...metadata.paymentDetails,
+                    chequePayment: (metadata.paymentDetails.chequePayment || 0) + paidAmount,
+                    creditAmount: 0,
+                    isPaymentDone: true,
+                };
+            } else {
+                paymentDetails.creditAmount -= remainingAmount;
+                paymentDetails.chequePayment = (paymentDetails.chequePayment || 0) + remainingAmount;
+                paymentDetails.isPaymentDone = false;
+                sr.paymentStatus = "PARTIALLY PAID";
+                metadata.paymentStatus = "PARTIALLY PAID";
+
+                const currentCheques = metadata.payments.cheques || [];
+                metadata.payments = {
+                    ...metadata.payments,
+                    cheques: [...currentCheques, data],
+                    credit: paymentDetails.creditAmount,
+                };
+
+                metadata.paymentDetails = {
+                    ...metadata.paymentDetails,
+                    chequePayment: (metadata.paymentDetails.chequePayment || 0) + remainingAmount,
+                    creditAmount: paymentDetails.creditAmount,
+                    isPaymentDone: false,
+                };
+
+                remainingAmount = 0;
+            }
+            return sr;
+        });
+
+        return await Promise.all(updatedSalesRecords.map(u => updateSalesRecordRepo({ _id: u._id }, u)));
+    } catch (e) {
+        console.error(e);
         throw e;
     }
 };
