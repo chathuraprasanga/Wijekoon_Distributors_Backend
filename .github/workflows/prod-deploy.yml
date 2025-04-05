@@ -60,6 +60,9 @@ jobs:
             [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
             nvm use node || echo "⚠️ NVM not found, skipping..."
 
+            echo "🔄 Pulling latest code..."
+            git pull
+
             echo "🧹 Cleaning old dist..."
             rm -rf dist
 
