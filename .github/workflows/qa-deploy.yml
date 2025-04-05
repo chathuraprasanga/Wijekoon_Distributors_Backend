@@ -59,7 +59,7 @@ jobs:
             tar -xzf backend-dist.tar.gz
 
             # Restart backend using PM2
-            pm2 restart "wd-server-qa" --update-env || pm2 start npm --name "wd-server-qa" -- start
+            pm2 restart "wd-server-qa" --update-env || pm2 start npm --name "wd-server-qa" -- qa
             pm2 save
 
             # Clean up
