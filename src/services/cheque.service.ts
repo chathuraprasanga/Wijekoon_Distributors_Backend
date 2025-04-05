@@ -11,6 +11,7 @@ import errors from "../constants/errors";
 import mongoose from "mongoose";
 import { findCustomerByIdService, updateCustomerCredit } from "./customer.service";
 import { CALCULATION_TYPES } from "../constants/settings";
+import { reduceBySalesRecords } from "./salesRecord.service";
 
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -27,6 +28,7 @@ export const createChequeService = async (data: any) => {
 
         if(customer.creditAmount > 0 && !data.salesRecordUpdate) {
             await updateCustomerCredit({...data,customer: customer}, CALCULATION_TYPES.DECREMENT);
+            await reduceBySalesRecords({...data, customer: customer});
         }
         return await createChequeRepo(data);
     } catch (e: any) {
@@ -88,18 +90,6 @@ export const findAllChequeService = async (data: any) => {
 
 export const updateChequeService = async (id: string, data: any) => {
     try {
-        // const existCheques = await findChequesRepo({
-        //     customer: data.customer,
-        //     number: data.number,
-        // });
-        // const duplicateCheques = existCheques.filter(
-        //     (c: any) => !c._id.equals(new ObjectId(id)) // Use .equals() for ObjectId comparison
-        // );
-        //
-        // if (duplicateCheques.length > 0) {
-        //     throw new Error(errors.CHEQUE_ALREADY_EXIST);
-        // }
-
         return await updateChequeRepo({ _id: id }, data);
     } catch (e: any) {
         console.error(e.message);
