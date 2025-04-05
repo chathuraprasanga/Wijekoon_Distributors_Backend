@@ -15,6 +15,7 @@ export interface ISalesRecord extends Document {
     metadata: any;
     notes: string;
     warehouse: ObjectId;
+    remark: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -91,7 +92,11 @@ const SalesRecordSchema: Schema<ISalesRecord> = new Schema<ISalesRecord>(
                 },
                 message: errors.INVALID_WAREHOUSE,
             },
+        },
+        remark: {
+            type: Schema.Types.String,
         }
+
     },
     {
         timestamps: true,
