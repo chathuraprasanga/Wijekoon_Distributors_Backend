@@ -16,6 +16,9 @@ import publicRoute from "./public.route";
 
 const routes = Router();
 
+routes.get("/", (req: any, res: any) => {
+    res.send("Hello from Wijekoon Distributors API Endpoints");
+});
 routes.use("/users", userRoute);
 routes.use("/customers", customerRoute);
 routes.use("/products", productRoute);
