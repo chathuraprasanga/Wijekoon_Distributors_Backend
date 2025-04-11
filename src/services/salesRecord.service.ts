@@ -1,10 +1,9 @@
 import {
-    countSalesRecords,
+    aggregateSalesRecordRepo,
     createSalesRecordRepo,
     findLastSalesRecord,
     findSalesRecordRepo,
     findSalesRecordsRepo,
-    getPagedSalesRecordsRepo,
     updateSalesRecordRepo,
 } from "../repositories/salesRecord.repository";
 import mongoose from "mongoose";
@@ -179,27 +178,52 @@ export const findAllSalesRecordsService = async (data: any) => {
 
 export const getPagedSalesRecordsService = async (data: any) => {
     try {
-        const filters = data.filters;
-        const { searchQuery, pageSize, pageIndex, sort, status } = filters;
-        const matchFilter: any = { $and: [] };
+        const { searchQuery, pageSize, pageIndex, sort, status } = data.filters;
 
+        const pipeline: any[] = [];
+
+        pipeline.push({
+            $lookup: {
+                from: "customer", // ensure this matches your Customer collection name
+                localField: "customer",
+                foreignField: "_id",
+                as: "customer",
+            },
+        });
+        pipeline.push({ $unwind: "$customer" });
+
+        const matchConditions: any[] = [];
         if (searchQuery) {
-            matchFilter.$or = [
-                { "customer.name": { $regex: searchQuery, $options: "i" } }, // Fixed key notation
-            ];
+            matchConditions.push({
+                "customer.name": { $regex: searchQuery, $options: "i" },
+            });
         }
-
         if (status) {
-            matchFilter.$and.push({ paymentStatus: status });
+            matchConditions.push({ paymentStatus: status });
+        }
+        if (matchConditions.length) {
+            pipeline.push({
+                $match: { $and: matchConditions },
+            });
         }
 
-        const response = await getPagedSalesRecordsRepo(
-            matchFilter,
-            pageSize,
-            pageIndex,
-            sort
+        if (sort) {
+            pipeline.push({
+                $sort: { createdAt: sort },
+            });
+        }
+        pipeline.push({ $skip: pageSize * (pageIndex - 1) });
+        pipeline.push({ $limit: pageSize });
+
+        const response = await aggregateSalesRecordRepo(pipeline);
+
+        const countPipeline = pipeline.filter(
+            (stage) => !("$skip" in stage || "$limit" in stage)
         );
-        const documentCount = await countSalesRecords(matchFilter);
+        countPipeline.push({ $count: "total" });
+
+        const countResult = await aggregateSalesRecordRepo(countPipeline);
+        const documentCount = countResult.length > 0 ? countResult[0].total : 0;
 
         return {
             response,
@@ -371,7 +395,8 @@ export const reduceBySalesRecords = async (data: any) => {
                 remainingAmount -= paidAmount;
 
                 paymentDetails.creditAmount = 0;
-                paymentDetails.chequePayment = (paymentDetails.chequePayment || 0) + paidAmount;
+                paymentDetails.chequePayment =
+                    (paymentDetails.chequePayment || 0) + paidAmount;
                 paymentDetails.isPaymentDone = true;
                 sr.paymentStatus = "PAID";
                 metadata.paymentStatus = "PAID";
@@ -385,13 +410,16 @@ export const reduceBySalesRecords = async (data: any) => {
 
                 metadata.paymentDetails = {
                     ...metadata.paymentDetails,
-                    chequePayment: (metadata.paymentDetails.chequePayment || 0) + paidAmount,
+                    chequePayment:
+                        (metadata.paymentDetails.chequePayment || 0) +
+                        paidAmount,
                     creditAmount: 0,
                     isPaymentDone: true,
                 };
             } else {
                 paymentDetails.creditAmount -= remainingAmount;
-                paymentDetails.chequePayment = (paymentDetails.chequePayment || 0) + remainingAmount;
+                paymentDetails.chequePayment =
+                    (paymentDetails.chequePayment || 0) + remainingAmount;
                 paymentDetails.isPaymentDone = false;
                 sr.paymentStatus = "PARTIALLY PAID";
                 metadata.paymentStatus = "PARTIALLY PAID";
@@ -405,7 +433,9 @@ export const reduceBySalesRecords = async (data: any) => {
 
                 metadata.paymentDetails = {
                     ...metadata.paymentDetails,
-                    chequePayment: (metadata.paymentDetails.chequePayment || 0) + remainingAmount,
+                    chequePayment:
+                        (metadata.paymentDetails.chequePayment || 0) +
+                        remainingAmount,
                     creditAmount: paymentDetails.creditAmount,
                     isPaymentDone: false,
                 };
@@ -415,7 +445,11 @@ export const reduceBySalesRecords = async (data: any) => {
             return sr;
         });
 
-        return await Promise.all(updatedSalesRecords.map(u => updateSalesRecordRepo({ _id: u._id }, u)));
+        return await Promise.all(
+            updatedSalesRecords.map((u) =>
+                updateSalesRecordRepo({ _id: u._id }, u)
+            )
+        );
     } catch (e) {
         console.error(e);
         throw e;

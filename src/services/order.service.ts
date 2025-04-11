@@ -1,8 +1,9 @@
 import {
-    countOrdersRepo,
-    createOrderRepo, findLastOrderRepo,
+    aggregateOrderRepo,
+    createOrderRepo,
+    findLastOrderRepo,
     findOrderRepo,
-    findOrdersRepo, getPagedOrdersRepo,
+    findOrdersRepo,
     updateOrderRepo,
 } from "../repositories/order.repository";
 import mongoose from "mongoose";
@@ -12,7 +13,6 @@ const ObjectId = mongoose.Types.ObjectId;
 
 export const createOrderService = async (data: any) => {
     try {
-
         const sanitizedData = JSON.parse(JSON.stringify(data));
         sanitizedData.metadata = { ...sanitizedData };
 
@@ -109,8 +109,8 @@ export const updateOrderService = async (id: string, data: any) => {
             notes: data.notes,
             orderDetails: data.products,
             metadata: {
-                ...data
-            }
+                ...data,
+            },
         };
 
         return await updateOrderRepo({ _id: id }, payload);
@@ -134,27 +134,53 @@ export const changeStatusOrderService = async (id: string, data: any) => {
 
 export const getPagedOrdersService = async (data: any) => {
     try {
-        const filters = data.filters;
-        const { searchQuery, pageSize, pageIndex, sort, status } = filters;
-        const matchFilter: any = { $and: [] };
+        const { searchQuery, pageSize, pageIndex, sort, status } = data.filters;
 
+        const pipeline: any[] = [];
+
+        pipeline.push({
+            $lookup: {
+                from: "customer",
+                localField: "customer",
+                foreignField: "_id",
+                as: "customer",
+            },
+        });
+        pipeline.push({
+            $unwind: "$customer",
+        });
+
+        const matchConditions: any[] = [];
         if (searchQuery) {
-            matchFilter.$or = [
-                { "customer.name": { $regex: searchQuery, $options: "i" } },
-            ];
+            matchConditions.push({
+                "customer.name": { $regex: searchQuery, $options: "i" },
+            });
         }
-
         if (status) {
-            matchFilter.$and.push({ paymentStatus: status });
+            matchConditions.push({ orderStatus: status });
+        }
+        if (matchConditions.length) {
+            pipeline.push({
+                $match: { $and: matchConditions },
+            });
+        }
+        if (sort) {
+            pipeline.push({
+                $sort: { createdAt: sort },
+            });
         }
 
-        const response = await getPagedOrdersRepo(
-            matchFilter,
-            pageSize,
-            pageIndex,
-            sort
+        pipeline.push({ $skip: pageSize * (pageIndex - 1) });
+        pipeline.push({ $limit: pageSize });
+
+        const response = await aggregateOrderRepo(pipeline);
+
+        const countPipeline = pipeline.filter(
+            (stage) => !("$skip" in stage || "$limit" in stage)
         );
-        const documentCount = await countOrdersRepo(matchFilter);
+        countPipeline.push({ $count: "total" });
+        const countResult = await aggregateOrderRepo(countPipeline);
+        const documentCount = countResult.length > 0 ? countResult[0].total : 0;
 
         return {
             response,
@@ -165,4 +191,3 @@ export const getPagedOrdersService = async (data: any) => {
         throw e;
     }
 };
-
