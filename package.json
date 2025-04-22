@@ -4,6 +4,7 @@
   "description": "",
   "main": "./dist/src/server.js",
   "scripts": {
+    "prepare": "husky install",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "cross-env NODE_ENV=prod node ./dist/server.js",
     "qa": "cross-env NODE_ENV=qa node ./dist/server.js",
