@@ -4,6 +4,8 @@ import {
     EMAIL_TYPES,
 } from "../helpers/emailHandler";
 import nodemailer from "nodemailer";
+import { findUsersRepo } from "../repositories/user.repository";
+import { USER_ROLES } from "../constants/settings";
 
 export const sendEmail = async (type: any, to: any, data: any) => {
     try {
@@ -71,16 +73,25 @@ export const createNotificationsForNewUserAdding = async (data: any) => {
     }
 };
 
-export const createNotificationsForBulkInvoicesPayments = async (data:any) => {
+export const createNotificationsForBulkInvoicesPayments = async (data: any) => {
     try {
-        const emails = [data.supplierData.email, ...data.additionalEmails];
+        const superiorUsers = await findUsersRepo({
+            $or: [{ role: USER_ROLES.OWNER }, { role: USER_ROLES.SUPER_ADMIN }],
+        });
+        const superiorUsersEmails = superiorUsers.map((u) => u.email);
+        const emails = [
+            data?.supplierData?.email,
+            ...(data?.additionalEmails || []),
+            ...superiorUsersEmails,
+        ];
+
         const type = EMAIL_TYPES.BULK_INVOICE_PAYMENTS;
         const emailPromises = emails.map(async (e: any) => {
             return await sendEmail(type, e, data);
         });
 
         await Promise.all(emailPromises);
-    } catch (e:any) {
+    } catch (e: any) {
         console.error(e.message);
     }
-}
+};
