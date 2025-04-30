@@ -5,7 +5,7 @@ export const findProductsRepo = (filters: any) => {
 };
 
 export const findProductRepo = (filters: any) => {
-    return Product.findOne(filters).exec();
+    return Product.findOne(filters).populate("supplier").exec();
 };
 
 export const createProductRepo = (data: any) => {
@@ -24,10 +24,10 @@ export const getPagedProductsRepo = (
     matchFilter: any,
     pageSize: any,
     pageIndex: any,
-    sort:any
+    sort: any
 ) => {
     return Product.find(matchFilter)
-        .sort({createdAt: sort})
+        .sort({ createdAt: sort })
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
         .exec();
