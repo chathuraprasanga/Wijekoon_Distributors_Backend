@@ -24,6 +24,9 @@ const ObjectId = mongoose.Types.ObjectId;
 
 export const createInvoiceService = async (data: any) => {
     try {
+        if (data.isCompanyCreated) {
+            data.invoiceNumber = await generateCompanyInvoiceNumber();
+        }
         const duplicateInvoice = await findInvoiceRepo({
             invoiceNumber: data.invoiceNumber,
         });
@@ -33,6 +36,29 @@ export const createInvoiceService = async (data: any) => {
         return await createInvoiceRepo(data);
     } catch (e: any) {
         console.error(e.message);
+        throw e;
+    }
+};
+
+const generateCompanyInvoiceNumber = async () => {
+    try {
+        const allInvoices: any = await findInvoicesRepo({});
+        const wdInvoices = allInvoices
+            .map((invoice: any) => invoice.invoiceNumber)
+            .filter((num: string) => num.startsWith("WD-INV-"));
+
+        if (wdInvoices.length === 0) {
+            return "WD-INV-0001";
+        }
+        const lastNumber = Math.max(
+            ...wdInvoices.map((num: any) =>
+                parseInt(num.replace("WD-INV-", ""), 10)
+            )
+        );
+        const nextNumber = lastNumber + 1;
+        return `WD-INV-${nextNumber.toString().padStart(3, "0")}`;
+    } catch (e) {
+        console.error(e);
         throw e;
     }
 };
