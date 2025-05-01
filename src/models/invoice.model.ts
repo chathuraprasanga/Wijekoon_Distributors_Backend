@@ -6,6 +6,7 @@ export interface IInvoice extends Document {
     supplier: ObjectId;
     invoiceDate: string;
     invoiceNumber: string;
+    isCompanyCreated: boolean;
     amount: number;
     invoiceStatus: string;
     status: boolean;
@@ -34,6 +35,10 @@ const InvoiceSchema: Schema = new Schema<IInvoice>(
             type: Schema.Types.String,
             required: [true, "Invoice number is required"],
             unique: true,
+        },
+        isCompanyCreated: {
+            type: Schema.Types.Boolean,
+            default: false,
         },
         amount: {
             type: Schema.Types.Number,
