@@ -95,8 +95,16 @@ const generateAmountDetails = async (data: any) => {
         const discount = data.discount || 0;
         const tax = data.tax || 0;
         const otherCost = data.otherCost || 0;
+        const otherDecrements = data.otherCost || 0;
         const netTotal = data.netTotal || 0;
-        return { subTotal, discount, tax, otherCost, netTotal };
+        return {
+            subTotal,
+            discount,
+            tax,
+            otherDecrements,
+            otherCost,
+            netTotal,
+        };
     } catch (e: any) {
         console.error(e.message);
         throw e;
