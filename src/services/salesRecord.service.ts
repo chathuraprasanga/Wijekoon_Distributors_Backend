@@ -95,7 +95,7 @@ const generateAmountDetails = async (data: any) => {
         const discount = data.discount || 0;
         const tax = data.tax || 0;
         const otherCost = data.otherCost || 0;
-        const otherDecrements = data.otherCost || 0;
+        const otherDecrements = data.otherDecrements || 0;
         const netTotal = data.netTotal || 0;
         return {
             subTotal,
