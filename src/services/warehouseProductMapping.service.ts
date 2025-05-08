@@ -46,7 +46,7 @@ export const updateStockService = async (id: any, data: any) => {
     try {
         let masterResponse: any[] = [];
 
-        const productMappingPromise = data.map(async (prod: any) => {
+        const productMappingPromise = data?.data?.map(async (prod: any) => {
             const productMapping = await findWarehouseProductMapping({
                 _id: prod.id,
             });
@@ -55,14 +55,16 @@ export const updateStockService = async (id: any, data: any) => {
                 throw new Error(`Product mapping not found for ID: ${prod.id}`);
             }
 
-            productMapping.count += prod.amount;
+            if (data.type === "increment") {
+                productMapping.count += prod.amount;
+            } else {
+                productMapping.count -= prod.amount;
+            }
 
-            const response = await updateWarehouseProductMapping(
+            return await updateWarehouseProductMapping(
                 { _id: prod.id },
                 { count: productMapping.count }
             );
-
-            return response;
         });
         masterResponse = await Promise.all(productMappingPromise);
 
